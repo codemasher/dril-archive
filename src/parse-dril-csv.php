@@ -12,6 +12,8 @@
  * @license      WTFPL
  */
 
+namespace codemasher\DrilArchive;
+
 /**
  * @var \Psr\Log\LoggerInterface $logger
  */

@@ -8,6 +8,8 @@
  * @license      WTFPL
  */
 
+namespace codemasher\DrilArchive;
+
 $builddir = __DIR__.'/../.build';
 $outdir   = __DIR__.'/../output';
 

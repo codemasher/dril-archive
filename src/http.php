@@ -8,6 +8,8 @@
  * @license      WTFPL
  */
 
+namespace codemasher\DrilArchive;
+
 use chillerlan\DotEnv\DotEnv;
 use chillerlan\HTTP\HTTPOptions;
 use chillerlan\HTTP\Psr18\CurlClient;

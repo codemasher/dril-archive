@@ -8,6 +8,8 @@
  * @license      WTFPL
  */
 
+namespace codemasher\DrilArchive;
+
 /**
  * load a JSON string from file into an array or object
  */

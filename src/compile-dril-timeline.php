@@ -8,6 +8,8 @@
  * @license      WTFPL
  */
 
+namespace codemasher\DrilArchive;
+
 use chillerlan\HTTP\Utils\MessageUtil;
 
 require_once __DIR__.'/../vendor/autoload.php';

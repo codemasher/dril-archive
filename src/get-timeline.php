@@ -10,6 +10,8 @@
  * @license      WTFPL
  */
 
+namespace codemasher\DrilArchive;
+
 use Psr\Http\Message\ResponseInterface;
 
 require_once __DIR__.'/../vendor/autoload.php';
