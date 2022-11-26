@@ -33,7 +33,7 @@ require_once __DIR__.'/functions.php';
  *   - there, in the "headers" tab, scroll to "request headers" and look for "Authorization: Bearer ..."
  *   - right click that line, select "copy value" and paste it below, should look like: 'Bearer AAAANRILgAAAAAAnNwI...'
  */
-$token = 'Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs=1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA';
+$requestToken = 'Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs=1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA';
 
 /*
  * The search query
@@ -67,8 +67,8 @@ if(!file_exists($dir)){
 
 $dir = realpath($dir);
 
-// trim the given token
-$token = str_replace('Bearer ', '', $token);
+// get the bearer token
+$token = getToken($requestToken);
 
 // fetch data
 [$timeline, $users] = getTimeline($query, $fromCachedApiResponses);

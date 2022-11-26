@@ -40,6 +40,7 @@ if(!file_exists($cachedir)){
 }
 
 $cachedir = realpath($cachedir);
+$token    = getToken();
 
 // load the json files
 $t = loadJSON($timelineJSON, true);

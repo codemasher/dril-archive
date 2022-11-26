@@ -22,17 +22,6 @@ require_once __DIR__.'/../vendor/autoload.php';
  */
 require_once __DIR__.'/logger.php';
 
-// alternatively, you can use the pre-generated bearer token from  https://developer.twitter.com/en/portal/projects-and-apps
-// get the token from the environment/config
-if(isset($_SERVER['GITHUB_ACTIONS'])){
-	$token = getenv('TWITTER_BEARER');
-}
-else{
-	// a dotenv instance for the config
-	$env   = (new DotEnv(__DIR__.'/../config', '.env', false))->load();
-	$token = $env->get('TWITTER_BEARER');
-}
-
 // options for the http/oauth clients
 $httpOptions = new HTTPOptions([
 	'ca_info'    => realpath(__DIR__.'/../config/cacert.pem'), // https://curl.haxx.se/ca/cacert.pem
@@ -51,4 +40,25 @@ function httpRequest(string $url, array $params):ResponseInterface{
 		->withHeader('Authorization', sprintf('Bearer %s', $token));
 
 	return $http->sendRequest($request);
+}
+
+/**
+ * Prepare a bearer token; if a $token is given it is assumed that it's the request token for the adaptive search API.
+ * Otherwise it attempts to get a token from the environment.
+ */
+function getToken(string $token = null):string{
+
+	if($token !== null){
+		return str_replace('Bearer ', '', $token);
+	}
+
+	// get the token from the environment/config
+	if(isset($_SERVER['GITHUB_ACTIONS'])){
+		return getenv('TWITTER_BEARER');
+	}
+
+	// a dotenv instance for the config
+	$env = (new DotEnv(__DIR__.'/../config', '.env', false))->load();
+
+	return $env->get('TWITTER_BEARER');
 }
