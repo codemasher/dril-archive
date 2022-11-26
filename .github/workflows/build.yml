@@ -1,0 +1,46 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+# https://github.com/sebastianbergmann/phpunit/blob/master/.github/workflows/ci.yml
+
+on:
+  push:
+    branches:
+      - main
+#  pull_request:
+#    branches:
+#      - main
+
+name: "Build"
+
+jobs:
+
+  build-docs:
+    name: "Build and publish to GH pages"
+
+    runs-on: ubuntu-latest
+
+    env:
+      TWITTER_BEARER: ${{ secrets.TWITTER_BEARER }}
+
+    steps:
+      - name: "Checkout sources"
+        uses: actions/checkout@v3
+
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+          coverage: none
+          extensions: curl, json, openssl
+
+      - name: "Install dependencies with composer"
+        uses: ramsey/composer-install@v2
+
+      - name: "Build"
+        run: php ./src/build.php
+
+      - name: "Publish to gh-pages"
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: output
+          clean: true

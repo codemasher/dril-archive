@@ -1,0 +1,6 @@
+/.build
+/.idea
+/config
+!/config/.env_example
+!/config/cacert.pem
+/vendor
