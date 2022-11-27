@@ -15,7 +15,9 @@ use function file_put_contents;
 use function json_decode;
 use function json_encode;
 use function preg_replace;
+use function preg_replace_callback;
 use function rawurlencode;
+use function sprintf;
 use function str_replace;
 use function strtotime;
 use const JSON_PRETTY_PRINT;
@@ -156,6 +158,31 @@ function parseMedia(object $media):array{
 	];
 }
 
+/**
+ * create <a> links for URLs, hastags and screen names
+ */
+function parseLinks(string $tweetText):string{
 
+	// link URLs
+	$tweetText = preg_replace_callback(
+		'#(https?://\S+)#i',
+		fn(array $m):string => sprintf('<a href="%1$s" target="_blank">%1$s</a>', $m[0]),
+		$tweetText
+	);
 
+	// hashtags
+	$tweetText = preg_replace_callback(
+		'/(#[\w_]+)/i',
+		fn(array $m):string => sprintf('<a href="https://twitter.com/search?q=%s" target="_blank">%s</a>', rawurlencode($m[0]), $m[0]),
+		$tweetText
+	);
 
+	// screen_names
+	$tweetText = preg_replace_callback(
+		'/@([a-z0-9_]+)/i',
+		fn(array $m):string => sprintf('<a href="https://twitter.com/%s" target="_blank">%s</a>', $m[1], $m[0]),
+		$tweetText
+	);
+
+	return $tweetText;
+}
