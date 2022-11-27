@@ -44,3 +44,16 @@ jobs:
           branch: gh-pages
           folder: output
           clean: true
+
+      - name: "Upload artifacts"
+        uses: actions/upload-artifact@v3
+#        if: contains(github.ref_type, 'branch')
+        with:
+          name: dril-archive-${{ github.sha }}
+          path: output
+
+#      - name: "Attach file to release"
+#        uses: softprops/action-gh-release@v1
+#        if: contains(github.ref_type, 'tag')
+#        with:
+#          files: ./output/**
