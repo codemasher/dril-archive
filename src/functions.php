@@ -108,9 +108,10 @@ function parseUser(object $user):array{
 		$url = str_replace($entity->url, $entity->expanded_url ?? $entity->url ?? '', $url);
 	}
 
-	$screenName     = $user->screen_name ?? $user->username;
-	$profile_image  = str_replace('_normal.', '.', $user->profile_image_url_https ?? $user->profile_image_url ?? '');
-	$profile_banner = $user->profile_banner_url ?? '';
+	$screenName      = $user->screen_name ?? $user->username;
+	$ptofile_image_s = $user->profile_image_url_https ?? $user->profile_image_url ?? '';
+	$profile_image   = str_replace('_normal.', '.', $ptofile_image_s);
+	$profile_banner  = $user->profile_banner_url ?? '';
 
 	return [
 		'id'              => $user->id,
@@ -132,6 +133,7 @@ function parseUser(object $user):array{
 		'is_cryptobro'    => $user->ext_has_nft_avatar ?? false,
 		'clown_emoji'     => $user->ext_is_blue_verified ?? false,
 		'profile_image'   => $profile_image,
+		'profile_image_s' => $ptofile_image_s,
 		'profile_banner'  => $profile_banner,
 	];
 }
