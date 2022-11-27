@@ -16,19 +16,23 @@ use function array_combine;
 use function array_fill;
 use function array_keys;
 use function array_reverse;
+use function array_search;
 use function array_values;
 use function count;
 use function file_exists;
 use function file_get_contents;
 use function file_put_contents;
 use function implode;
+use function intval;
 use function json_decode;
 use function md5;
 use function mkdir;
+use function preg_match_all;
 use function realpath;
 use function sleep;
 use function sort;
 use function sprintf;
+use function str_replace;
 use function str_starts_with;
 use const JSON_THROW_ON_ERROR;
 use const SORT_NUMERIC;
@@ -267,11 +271,114 @@ foreach(array_chunk($csv, 100) as $ids){
 
 	foreach($v1json as $v1Tweet){
 		$users[$v1Tweet->user->id] = parseUser($v1Tweet->user);
-		unset($user);
+		unset($v1Tweet->user);
 		$timeline[$v1Tweet->id]    = parseTweet($v1Tweet);
 	}
 
+	$logger->info(sprintf('fetched data for %s tweets from CSV', count($ids)));
 }
+
+
+// filter out imporperly embedded photos and tweets
+// https://twitter.com/<screen_name>/status/<status>/photo/1
+// https://twitter.com/<screen_name>/status/<truncated_status_id>
+$matches  = [];
+$statuses = [];
+
+foreach($timeline as $id => $tweet){
+
+	$rx = '#https://twitter.com/(?<screen_name>[^/]+)/status/(?<status_id>\d+)/photo/(?<photo>\d+)(\S+)?#i';
+
+	if(preg_match_all($rx, $tweet['text'], $m)){
+		$matches[$id]  = ['photo', $m];
+		$statuses[$id] = $m['status_id'][0];
+	}
+
+	if(isset($tweet['retweeted_status']['text'])){
+		if(preg_match_all($rx, $tweet['retweeted_status']['text'], $m)){
+			$matches[$id]  = ['photo_rt', $m];
+			$statuses[$id] = $m['status_id'][0];
+		}
+	}
+
+	if(preg_match_all('#https://twitter.com/(?<screen_name>[^/]+)/status/(?<status_id>\d+)(\S+)?#i', $tweet['text'], $m)){
+		$matches[$id]  = ['quote', $m];
+		$statuses[$id] = $m['status_id'][0];
+	}
+
+}
+
+foreach(array_chunk($statuses, 100) as $ids){
+
+	$v1Params = [
+		'id'                   => implode(',', $ids),
+		'trim_user'            => false,
+		'map'                  => false,
+		'include_ext_alt_text' => true,
+		'skip_status'          => true,
+		'include_entities'     => true,
+	];
+
+	$v1Response = httpRequest('https://api.twitter.com/1.1/statuses/lookup.json', $v1Params);
+
+	if($v1Response->getStatusCode() !== 200){
+		$logger->warning('could not fetch tweets from v1 endpoint');
+
+		continue;
+	}
+
+	$v1json = MessageUtil::decodeJSON($v1Response, false);
+
+	foreach($v1json as $v1Tweet){
+		$users[$v1Tweet->user->id] = parseUser($v1Tweet->user);
+		unset($v1Tweet->user);
+
+		$id = array_search($v1Tweet->id_str, $statuses, true);
+
+		[$type, $match] = $matches[$id];
+
+		if($type === 'quote'){
+
+			// in case the quoted tweet does not exist in the tweet object
+			if($timeline[$id]['quoted_status_id'] === null || $timeline[$id]['quoted_status'] === null){
+				$timeline[$id]['quoted_status_id'] = $v1Tweet->id;
+				$timeline[$id]['quoted_status']    = parseTweet($v1Tweet);
+			}
+
+			// just remove the tweet URL
+			$timeline[$id]['text'] = str_replace($match[0][0], '', $timeline[$id]['text']);
+		}
+		elseif($type === 'photo' || $type === 'photo_rt'){
+			$mediaItems = [];
+
+			if(isset($v1Tweet->entities->media)){
+				foreach($v1Tweet->entities->media as $media){
+					$mediaItems[] = parseMedia($media);
+				}
+			}
+			else{
+				// ok this is awkward but there's no media linked in the response, so we gotta go with the link provided :(
+				// the v2 response is useless btw
+#				var_dump($v1Tweet);
+			}
+
+			// add the media to the respective tweets
+			if($type === 'photo'){
+				$timeline[$id]['media'] = $mediaItems;
+				$timeline[$id]['text']  = str_replace($match[0][0], '', $timeline[$id]['text']);
+			}
+			elseif($type === 'photo_rt'){
+				$timeline[$id]['retweeted_status']['media'] = $mediaItems;
+				$timeline[$id]['retweeted_status']['text']  = str_replace($match[0][0], '', $timeline[$id]['retweeted_status']['text']);
+			}
+
+		}
+
+	}
+
+	$logger->info(sprintf('fetched data for %s embedded/photo tweets ', count($ids)));
+}
+
 
 // prepare for output
 $sortedTLKeys = array_keys($timeline);
