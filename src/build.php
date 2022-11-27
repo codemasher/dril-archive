@@ -27,3 +27,4 @@ if(!file_exists($outdir)){
 require_once __DIR__.'/get-timeline.php';
 require_once __DIR__.'/parse-dril-csv.php';
 require_once __DIR__.'/compile-dril-timeline.php';
+require_once __DIR__.'/compile-html.php';
