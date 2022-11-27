@@ -14,6 +14,25 @@
 
 namespace codemasher\DrilArchive;
 
+use Exception;
+use function array_column;
+use function array_combine;
+use function array_diff_key;
+use function array_shift;
+use function count;
+use function fclose;
+use function feof;
+use function fgetcsv;
+use function file_exists;
+use function fopen;
+use function ini_set;
+use function intval;
+use function realpath;
+use function sprintf;
+use function str_replace;
+use function strtotime;
+use function trim;
+
 /**
  * @var \Psr\Log\LoggerInterface $logger
  */

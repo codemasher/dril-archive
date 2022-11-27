@@ -10,6 +10,9 @@
 
 namespace codemasher\DrilArchive;
 
+use function file_exists;
+use function mkdir;
+
 $builddir = __DIR__.'/../.build';
 $outdir   = __DIR__.'/../output';
 

@@ -13,6 +13,20 @@
 namespace codemasher\DrilArchive;
 
 use Psr\Http\Message\ResponseInterface;
+use Throwable;
+use function count;
+use function file_exists;
+use function file_get_contents;
+use function file_put_contents;
+use function json_decode;
+use function md5;
+use function mkdir;
+use function print_r;
+use function realpath;
+use function sleep;
+use function sprintf;
+use function str_starts_with;
+use const JSON_THROW_ON_ERROR;
 
 require_once __DIR__.'/../vendor/autoload.php';
 

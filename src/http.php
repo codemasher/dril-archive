@@ -16,6 +16,10 @@ use chillerlan\HTTP\Psr18\CurlClient;
 use chillerlan\HTTP\Psr7\Request;
 use chillerlan\HTTP\Utils\QueryUtil;
 use Psr\Http\Message\ResponseInterface;
+use function getenv;
+use function realpath;
+use function sprintf;
+use function str_replace;
 
 require_once __DIR__.'/../vendor/autoload.php';
 
