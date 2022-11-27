@@ -172,9 +172,9 @@ function renderTweet(array $tweet, array $users, bool $qt = false):string{#
 		<div dir="auto" class="text">'.$text.'</div>
 		<div class="media">'.$media.$quoted.'</div>
 		<div class="footer">
-			<div><img alt="Replies" class="reply" />'.number_format($t['reply_count'], 0, '', '.').'</div>
-			<div><img alt="Retweets" class="retweet" />'.number_format($t['retweet_count'], 0, '', '.').'</div>
-			<div><img alt="Likes" class="like" />'.number_format($t['favorite_count'], 0, '', '.').'</div>
+			<div><div class="reply"></div>'.number_format($t['reply_count'], 0, '', '.').'</div>
+			<div><div class="retweet"></div>'.number_format($t['retweet_count'], 0, '', '.').'</div>
+			<div><div class="like"></div>'.number_format($t['favorite_count'], 0, '', '.').'</div>
 		</div>
 	</div>
 </article>';
