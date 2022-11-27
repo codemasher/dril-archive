@@ -128,6 +128,7 @@ a:hover, a:focus, a:active, a:hover {
 }
 
 .reply, .retweet, .like {
+	display: inline-block;
 	height: 1.25em;
 	margin: 0 0.5em 0 0;
 	vertical-align: -0.225em;
