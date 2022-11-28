@@ -10,8 +10,10 @@
 
 namespace codemasher\DrilArchive;
 
+use Exception;
 use function array_chunk;
 use function array_map;
+use function ceil;
 use function count;
 use function date;
 use function file_exists;
@@ -41,7 +43,7 @@ rename($htmlOut.'/index.html', $htmlOut.'/dril.html');
 renderPages($timeline, $tweetUsers, $htmlOut, 1000);
 
 /**
- *
+ * @throws \Exception
  */
 function renderPages(string $timelineJSON, string $userJSON, string $outpath, int $maxTweets = null):void{
 	global $logger;
@@ -49,13 +51,25 @@ function renderPages(string $timelineJSON, string $userJSON, string $outpath, in
 	$timeline   = loadJSON($timelineJSON, true);
 	$tweetUsers = loadJSON($userJSON, true);
 
+	if(empty($outpath)){
+		throw new Exception('invalid html outpath');
+	}
+
 	if(!file_exists($outpath)){
 		mkdir(directory: $outpath, recursive: true);
 	}
 
-	$outpath = realpath($outpath);
-	$maxTweets ??= count($timeline);
-	$page = 0;
+	$outpath      = realpath($outpath);
+	$tlcount      = count($timeline);
+	$headerHeight = 96;
+
+	if($maxTweets === null || $maxTweets < 0 || $maxTweets > $tlcount){
+		$maxTweets    = $tlcount;
+		$headerHeight = 48;
+	}
+
+	$pages = (int)ceil($tlcount / $maxTweets);
+	$page  = 0;
 
 	// create avatar CSS
 	$avatarCSS = implode('', array_map(
@@ -66,6 +80,26 @@ function renderPages(string $timelineJSON, string $userJSON, string $outpath, in
 	file_put_contents($outpath.'/avatars.css', $avatarCSS);
 
 	foreach(array_chunk($timeline, $maxTweets) as $chunk){
+
+		// create pagination
+		$pagination = '';
+
+		if($pages > 0){
+			$pagination = '<div id="pagination-wrapper">';
+
+			for($i = 0; $i < $pages; $i++){
+				$pagination .= sprintf(
+					'<a%s href="./%s.html"><span>%s</span></a>',
+					$i === $page ? ' class="currentpage"' : '',
+					$i === 0 ? 'index' : 'page-'.($i + 1),
+					$i + 1
+				);
+			}
+
+			$pagination .= '</div>';
+		}
+
+		// render tweets
 		$timelineHTML = '';
 
 		foreach($chunk as $tweet){
@@ -73,7 +107,7 @@ function renderPages(string $timelineJSON, string $userJSON, string $outpath, in
 		}
 
 		$html = '<!DOCTYPE html>
-<!--suppress ALL -->
+<!-- suppress ALL -->
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
@@ -84,20 +118,26 @@ function renderPages(string $timelineJSON, string $userJSON, string $outpath, in
 	<link rel="stylesheet" href="./avatars.css">
 </head>
 <body>
-<div id="timeline-container">'.$timelineHTML.'
+<div id="header-wrapper">
+	<div>
+		<a href="https://codemasher.github.io/dril-archive/"><img id="header-image" src="./assets/dril.jpg" alt="Dril Archive" /></a>
+		<a href="https://twitter.com/dril" target="_blank">@dril</a> &bull;
+		<a href="https://github.com/codemasher/dril-archive/tree/gh-pages" target="_blank">Download</a> &bull;
+		<a href="https://github.com/codemasher/dril-archive" target="_blank">GitHub</a>
+	</div>
+</div>'.$pagination.'
+<div id="timeline-wrapper" style="height: calc(100% - '.$headerHeight.'px);">'.$timelineHTML.'
 </div>
 <!-- https://github.com/twitter/twemoji -->
 <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
-<script>twemoji.parse(document.getElementById(\'timeline-container\'))</script>
+<script>twemoji.parse(document.getElementById(\'timeline-wrapper\'))</script>
 </body>
 </html>';
 
-		$filename = sprintf('%s/%s.html', $outpath, ($page === 0 ? 'index' : 'page-'.$page));
-
-		file_put_contents($filename, $html);
-
+		// save to file
+		$filename = sprintf('%s/%s.html', $outpath, ($page === 0 ? 'index' : 'page-'.($page + 1)));
 		$logger->info(sprintf('created html page %s: %s', $page, $filename));
-
+		file_put_contents($filename, $html);
 		$page++;
 	}
 
@@ -109,10 +149,10 @@ function renderPages(string $timelineJSON, string $userJSON, string $outpath, in
 function renderTweet(array $tweet, array $users, bool $qt = false):string{#
 	global $logger;
 
-	$t       = $tweet;
+	$t      = $tweet;
 	$status = '';
-	$quoted  = '';
-	$media   = '';
+	$quoted = '';
+	$media  = '';
 
 	if($tweet['retweeted_status'] !== null){
 		$t      = $tweet['retweeted_status'];
