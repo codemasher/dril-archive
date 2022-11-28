@@ -40,10 +40,16 @@ require_once __DIR__.'/logger.php';
 require_once __DIR__.'/functions.php';
 
 // the path to the dril .csv downloaded from google docs
+// https://docs.google.com/spreadsheets/d/1juZ8Dzx-hVCDx_JLVOKI1eHzBlURHd7u6dqkb3F8q4w
 $drilCSV  = realpath(__DIR__.'/../.build/dril.csv');
 
 // the path to the json file from the gist or fetched via timeline.php
 $drilJSON = realpath(__DIR__.'/../.build/from-dril/c1e557f317aedab4bb23182877876fe7-timeline.json');
+
+// on GitHub actions: clone repo, checkout gh-pages, use previous build
+if(isset($_SERVER['GITHUB_ACTIONS'])){
+	$drilJSON = realpath(__DIR__.'/../previous-build/dril-timeline.json');
+}
 
 // the output file path
 $output   = __DIR__.'/../.build/dril.csv.json';
