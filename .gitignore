@@ -3,4 +3,7 @@
 /config
 !/config/.env_example
 !/config/cacert.pem
+/output/*.css
+/output/*.html
+/output/*.json
 /vendor
