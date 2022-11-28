@@ -2,7 +2,8 @@
 	box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
 	margin: 0;
 	padding: 0;
 	width: 100%;
@@ -12,17 +13,79 @@ html, body {
 	line-height: 1.25em;
 }
 
-a, a:link {
+a,
+a:link {
 	text-decoration: none;
 	color: #000;
 }
 
-a:hover, a:focus, a:active, a:hover {
+a:hover,
+a:focus,
+a:active,
+a:hover {
 	text-decoration: underline;
 }
 
-#timeline-container{
-	height: 100%;
+#header-wrapper{
+	height: 48px;
+	background: rgba(0,0,0,0.8);
+	color: rgb(246, 246, 246);
+	font-weight: bold;
+}
+
+#header-wrapper > div {
+	margin: 0 auto;
+	max-width: 960px;
+	text-align: center;
+	padding: 0.5em
+}
+
+#header-image {
+	float: left;
+	height: 1.25em;
+	border-radius: 50%;
+}
+
+#header-wrapper a,
+#header-wrapper a:link {
+	color: rgb(246, 246, 246);
+}
+
+#pagination-wrapper {
+	margin: 0 auto;
+	max-width: 960px;
+	height: 48px;
+	text-align: center;
+	border:1px solid rgb(207, 217, 222);
+	border-top: none;
+	border-bottom: none;
+}
+
+#pagination-wrapper > a {
+	display: inline-block;
+	width: 1.5em;
+	height: 1.5em;
+	border: 1px solid rgb(207, 217, 222);
+	border-radius: 50%;
+	margin: 0.275em;
+}
+
+#pagination-wrapper > a.currentpage,
+#pagination-wrapper > a:hover,
+#pagination-wrapper > a:focus,
+#pagination-wrapper > a:active,
+#pagination-wrapper > a:hover {
+	text-decoration: none;
+	border: 1px solid rgb(83, 100, 113);
+	background: rgb(207, 217, 222);
+}
+
+#pagination-wrapper > a > span {
+	vertical-align: middle;
+
+}
+
+#timeline-wrapper{
 	margin: 0 auto;
 	max-width: 960px;
 	overflow-x: hidden;
@@ -64,7 +127,8 @@ a:hover, a:focus, a:active, a:hover {
 	min-height: 72px;
 }
 
-.header, .footer {
+.header,
+.footer {
 	font-size: 16px;
 }
 
@@ -76,7 +140,10 @@ a:hover, a:focus, a:active, a:hover {
 	font-weight: bold;
 }
 
-.screenname ,.timestamp, .status, .footer {
+.screenname ,
+.timestamp,
+.status,
+.footer {
 	color: rgb(83, 100, 113);
 }
 
@@ -84,7 +151,10 @@ a:hover, a:focus, a:active, a:hover {
 	overflow-wrap: break-word;
 }
 
-.text > a, .text > a:link, .status > a, .status > a:link {
+.text > a,
+.text > a:link,
+.status > a,
+.status > a:link {
 	color: rgb(83, 100, 113);
 }
 
@@ -127,7 +197,9 @@ a:hover, a:focus, a:active, a:hover {
 	min-width: 5em;
 }
 
-.reply, .retweet, .like {
+.reply,
+.retweet,
+.like {
 	display: inline-block;
 	height: 1.25em;
 	margin: 0 0.5em 0 0;
