@@ -20,6 +20,7 @@ use function implode;
 use function mkdir;
 use function number_format;
 use function realpath;
+use function rename;
 use function sprintf;
 
 /**
@@ -32,7 +33,12 @@ $timeline   = __DIR__.'/../output/dril-timeline.json';
 $tweetUsers = __DIR__.'/../output/dril-users.json';
 $htmlOut    = __DIR__.'/../output';
 
-renderPages($timeline, $tweetUsers, $htmlOut);
+// create a single html file that contains all tweets
+renderPages($timeline, $tweetUsers, $htmlOut, null);
+// rename
+rename($htmlOut.'/index.html', $htmlOut.'/dril.html');
+// create a paginated version
+renderPages($timeline, $tweetUsers, $htmlOut, 1000);
 
 /**
  *
