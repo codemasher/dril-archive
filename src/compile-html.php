@@ -51,14 +51,15 @@ function renderPages(string $timelineJSON, string $userJSON, string $outpath, in
 	$maxTweets ??= count($timeline);
 	$page = 0;
 
+	// create avatar CSS
+	$avatarCSS = implode('', array_map(
+		fn(array $user):string => sprintf(".avatar-%s{content:url(\"%s\")}\n", $user['screen_name'], $user['profile_image_s']),
+		$tweetUsers
+	));
+
+	file_put_contents($outpath.'/avatars.css', $avatarCSS);
+
 	foreach(array_chunk($timeline, $maxTweets) as $chunk){
-		$cssformat = "\n\t\t.avatar-%s{content:url(\"%s\")}";
-
-		$userCSS = implode('', array_map(
-			fn(array $user):string => sprintf($cssformat, $user['screen_name'], $user['profile_image_s']),
-			$tweetUsers
-		));
-
 		$timelineHTML = '';
 
 		foreach($chunk as $tweet){
@@ -66,15 +67,15 @@ function renderPages(string $timelineJSON, string $userJSON, string $outpath, in
 		}
 
 		$html = '<!DOCTYPE html>
+<!--suppress ALL -->
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 	<title>dril archive</title>
-	<link rel="icon" type="image/png" sizes="48x48" href="./favicon.ico">
+	<link rel="icon" type="image/png" sizes="48x48" href="./assets/favicon.ico">
 	<link rel="stylesheet" href="./assets/timeline.css">
-	<style>'.$userCSS.'
-	</style>
+	<link rel="stylesheet" href="./avatars.css">
 </head>
 <body>
 <div id="timeline-container">'.$timelineHTML.'
@@ -110,14 +111,14 @@ function renderTweet(array $tweet, array $users, bool $qt = false):string{#
 	if($tweet['retweeted_status'] !== null){
 		$t      = $tweet['retweeted_status'];
 		$status = sprintf(
-			'<a href="https://twitter.com/%1$s/status/%2$s" target="_blank"><img alt="Retweeted by %1$s" class="retweet" />%1$s retweeted</a>',
+			'<a href="https://twitter.com/%1$s/status/%2$s" target="_blank"><div class="retweet"></div>@%1$s retweeted</a>',
 			$users[$tweet['user_id']]['screen_name'],
 			$tweet['id']
 		);
 	}
 	elseif($tweet['in_reply_to_status_id'] !== null){
 		$status = sprintf(
-			'<a href="https://twitter.com/%1$s/status/%2$s" target="_blank"><img alt="In reply to %1$s" class="reply" />In reply to %1$s</a>',
+			'<a href="https://twitter.com/%1$s/status/%2$s" target="_blank"><div class="reply"></div>In reply to @%1$s</a>',
 			$users[$tweet['in_reply_to_user_id']]['screen_name'] ?? $tweet['in_reply_to_screen_name'],
 			$tweet['in_reply_to_status_id']
 		);
