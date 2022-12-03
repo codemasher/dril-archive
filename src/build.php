@@ -44,21 +44,20 @@ $options = new DrilArchiveOptions([
 	'fromCachedApiResponses'  => true,
 	'apiToken'                => getToken(),
 	'fetchFromAdaptiveSearch' => false,
-	'adaptiveRequestToken'    => 'AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA',
-	'adaptiveGuestToken'      => '1598800173827858440',
+#	'adaptiveRequestToken'    => 'AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA',
+#	'adaptiveGuestToken'      => '1598800173827858440',
 #	'query'                   => 'from:dril include:nativeretweets',
 	'fetchFromAPISearch'      => true,
 	'query'                   => sprintf('from:dril include:nativeretweets since:%s until:%s', date('Y-m-d', ($now - 86400 * 30)), date('Y-m-d', $now)),
-	'drilCSV'                 => realpath(__DIR__.'/../.build/dril.csv'), // https://docs.google.com/spreadsheets/d/1juZ8Dzx-hVCDx_JLVOKI1eHzBlURHd7u6dqkb3F8q4w
+#	'drilCSV'                 => realpath(__DIR__.'/../.build/dril.csv'), // https://docs.google.com/spreadsheets/d/1juZ8Dzx-hVCDx_JLVOKI1eHzBlURHd7u6dqkb3F8q4w
 #	'' => '',
 ]);
 
-// we need this one here just for the first run in order to convert to the new format
-$timelineJSON = __DIR__.'/../.build/dril.json';
-#$timelineJSON = null;
-// on GitHub actions: clone repo, checkout gh-pages, use previous build
-#if(isset($_SERVER['GITHUB_ACTIONS'])){
-#	$timelineJSON = realpath(__DIR__.'/../previous-build/dril-timeline.json');
-#}
+$timelineJSON = null;
 
-(new DrilArchive($options))->compileDrilTimeline($timelineJSON);
+// on GitHub actions: clone repo, checkout gh-pages, use previous build
+if(isset($_SERVER['GITHUB_ACTIONS'])){
+	$timelineJSON = realpath(__DIR__.'/../previous-build/dril-timeline.json');
+}
+
+(new DrilArchive($options))->compileDrilTimeline($timelineJSON, false);
