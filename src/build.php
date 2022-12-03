@@ -36,7 +36,7 @@ $now = time();
 
 $options = new DrilArchiveOptions([
 	// HTTPOptions
-	'ca_info'                 => __DIR__.'/../config/cacert.pem', // https://curl.haxx.se/ca/cacert.pem
+	'ca_info'                 => realpath(__DIR__.'/../config/cacert.pem'), // https://curl.haxx.se/ca/cacert.pem
 	'user_agent'              => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)',
 	// DrilArchiveOptions
 	'builddir'                => __DIR__.'/../.build',
@@ -48,7 +48,7 @@ $options = new DrilArchiveOptions([
 #	'adaptiveGuestToken'      => '1598800173827858440',
 #	'query'                   => 'from:dril include:nativeretweets',
 	'fetchFromAPISearch'      => true,
-	'query'                   => sprintf('from:dril include:nativeretweets since:%s until:%s', date('Y-m-d', ($now - 86400 * 30)), date('Y-m-d', $now)),
+	'query'                   => sprintf('from:dril include:nativeretweets since:%s until:%s', date('Y-m-d', ($now - 86400 * 7)), date('Y-m-d', $now)),
 #	'drilCSV'                 => realpath(__DIR__.'/../.build/dril.csv'), // https://docs.google.com/spreadsheets/d/1juZ8Dzx-hVCDx_JLVOKI1eHzBlURHd7u6dqkb3F8q4w
 #	'' => '',
 ]);
