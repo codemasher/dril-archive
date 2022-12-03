@@ -44,7 +44,7 @@ jobs:
         uses: ramsey/composer-install@v2
 
       - name: "Fetch cacert.pem from curl.haxx.se"
-        run: curl https://curl.haxx.se/ca/cacert.pem > config/cacert.pem
+        run: wget -O config/cacert.pem https://curl.haxx.se/ca/cacert.pem
 
       - name: "Build"
         run: php ./src/build.php
