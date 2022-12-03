@@ -45,7 +45,7 @@ $options = new DrilArchiveOptions([
 	'apiToken'                => getToken(),
 	'fetchFromAdaptiveSearch' => true,
 	'adaptiveRequestToken'    => 'AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA',
-	'adaptiveGuestToken'      => '1599061040335028225',
+	'adaptiveGuestToken'      => '1599107320918822914',
 	'query'                   => 'from:dril include:nativeretweets',
 #	'fetchFromAPISearch'      => true,
 #	'query'                   => sprintf('from:dril include:nativeretweets since:%s until:%s', date('Y-m-d', ($now - 86400 * 7)), date('Y-m-d', $now)),
@@ -60,4 +60,4 @@ if(isset($_SERVER['GITHUB_ACTIONS'])){
 	$timelineJSON = realpath(__DIR__.'/../previous-build/dril.json');
 }
 
-(new DrilArchive($options))->compileDrilTimeline($timelineJSON, false);
+(new DrilArchive($options))->compileDrilTimeline($timelineJSON, true);
