@@ -7,7 +7,7 @@
 		"ext-json": "*",
 		"ext-openssl": "*",
 		"chillerlan/php-dotenv": "^2.1.2",
-		"chillerlan/php-oauth-providers": "dev-main#a51412ac2fa3f42a86b1e3cbd95c9ad70b0f1fbb",
+		"chillerlan/php-oauth-providers": "dev-main#48d83dc04879baea1468d39adf468565b5ef3de0",
 		"monolog/monolog": "^3.2"
 	},
 	"autoload": {
