@@ -160,6 +160,30 @@ class Timeline implements ArrayAccess, Countable, JsonSerializable{
 	}
 
 	/**
+	 *
+	 */
+	protected function setTweetUsers(Tweet $tweet):Tweet{
+
+		if(isset($this->users[$tweet->user_id])){
+			$tweet->setUser($this->users[$tweet->user_id]);
+		}
+
+		if($tweet->in_reply_to_user_id !== null && isset($this->users[$tweet->in_reply_to_user_id])){
+			$tweet->setInReplyToUser($this->users[$tweet->in_reply_to_user_id]);
+		}
+
+		if(isset($tweet->quoted_status)){
+			$this->setTweetUsers($tweet->quoted_status);
+		}
+
+		if(isset($tweet->retweeted_status)){
+			$this->setTweetUsers($tweet->retweeted_status);
+		}
+
+		return $tweet;
+	}
+
+	/**
 	 * @throws \Exception
 	 */
 	public function toHTML(string $outpath, int $maxTweets = null):void{
@@ -215,8 +239,9 @@ class Timeline implements ArrayAccess, Countable, JsonSerializable{
 			// render tweets
 			$timelineHTML = '';
 
+			/** @var \codemasher\DrilArchive\Tweet $tweet */
 			foreach($chunk as $tweet){
-				$timelineHTML .= $tweet->toHTML($this->users);
+				$timelineHTML .= $this->setTweetUsers($tweet)->toHTML();
 			}
 
 			$html = '<!DOCTYPE html>

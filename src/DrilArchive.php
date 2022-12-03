@@ -200,7 +200,7 @@ class DrilArchive{
 	/**
 	 *
 	 */
-	public function compileDrilTimeline(string $timelineJSON = null, bool $scanRTs = true,):self{
+	public function compileDrilTimeline(string $timelineJSON = null, bool $scanRTs = true):self{
 		$this->tempTimeline = [];
 		$this->tempTweets   = [];
 		$this->tempUsers    = [];

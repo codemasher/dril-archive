@@ -10,6 +10,7 @@
 
 namespace codemasher\DrilArchive;
 
+use InvalidArgumentException;
 use JsonSerializable;
 use stdClass;
 use function date;
@@ -22,7 +23,6 @@ use function property_exists;
 use function sprintf;
 use function str_replace;
 use function strtotime;
-use function var_dump;
 use const JSON_THROW_ON_ERROR;
 
 /**
@@ -32,7 +32,6 @@ class Tweet implements JsonSerializable{
 
 	public readonly int $id;
 	public readonly int $user_id;
-	public readonly ?User $user;
 	public readonly int $created_at;
 	public readonly string $text;
 	public readonly ?string $source;
@@ -45,19 +44,22 @@ class Tweet implements JsonSerializable{
 	public readonly bool $possibly_sensitive;
 	public readonly ?int $in_reply_to_status_id;
 	public readonly ?int $in_reply_to_user_id;
-	public readonly ?User $in_reply_to_user;
 	public readonly ?string $in_reply_to_screen_name;
 	public readonly bool $is_quote_status;
 	public readonly ?int $quoted_status_id;
-	public readonly ?Tweet $quoted_status;
 	public readonly ?int $retweeted_status_id;
-	public readonly ?Tweet $retweeted_status;
 	public readonly ?int $self_thread_id;
 	public readonly ?int $conversation_id;
 	public readonly array $media;
 	public readonly ?array $coordinates;
 	public readonly ?array $geo;
 	public readonly ?array $place;
+
+	public readonly ?Tweet $quoted_status;
+	public readonly ?Tweet $retweeted_status;
+
+	protected ?User $user;
+	protected ?User $in_reply_to_user;
 
 	/**
 	 * @throws \JsonException
@@ -78,7 +80,7 @@ class Tweet implements JsonSerializable{
 			if(property_exists($this, $property)){
 
 				if(in_array($property, ['quoted_status', 'retweeted_status'])){
-					$this->{$property} = !empty($value) ? new Tweet($value) : null;
+					$this->{$property} = !empty($value) ? new self($value) : null;
 				}
 				elseif(in_array($property, ['coordinates', 'geo', 'place'])){
 					$this->{$property} = !empty($value) ? (array)$value : null;
@@ -110,7 +112,6 @@ class Tweet implements JsonSerializable{
 
 		$this->id                      = (int)$tweet->id;
 		$this->user_id                 = (int)($tweet->user_id ?? $tweet->author_id ?? $tweet->user->id ?? 0);
-#		$this->user                    = null;
 		$this->created_at              = strtotime($tweet->created_at);
 		$this->text                    = $text;
 		$this->source                  = $tweet->source ?? null;
@@ -125,9 +126,6 @@ class Tweet implements JsonSerializable{
 		$this->in_reply_to_user_id     = $tweet->in_reply_to_user_id ?? null;
 		$this->in_reply_to_screen_name = $tweet->in_reply_to_screen_name ?? null;
 		$this->is_quote_status         = $tweet->is_quote_status ?? false;
-#		$this->quoted_status           = null;
-#		$this->retweeted_status_id     = $tweet->retweeted_status_id ?? null;
-#		$this->retweeted_status        = null;
 		$this->self_thread_id          = $tweet->self_thread->id ?? null;
 		$this->conversation_id         = $tweet->conversation_id ?? null;
 		$this->media                   = $mediaItems;
@@ -179,21 +177,51 @@ class Tweet implements JsonSerializable{
 	}
 
 	/**
+	 *
+	 */
+	public function setUser(User $user):self{
+
+		if($user->id !== $this->user_id){
+			throw new InvalidArgumentException('invalid User');
+		}
+
+		$this->user = $user;
+
+		return $this;
+	}
+
+	/**
+	 *
+	 */
+	public function setInReplyToUser(User $user):self{
+
+		if($this->in_reply_to_user_id !== null && $user->id !== $this->in_reply_to_user_id){
+			throw new InvalidArgumentException('invalid User');
+		}
+
+		$this->in_reply_to_user = $user;
+
+		return $this;
+	}
+
+	/**
 	 * @see https://developer.twitter.com/en/docs/twitter-api/data-dictionary/object-model/media
 	 */
-	public static function parseMedia(object $media):array{
-		return [
-			'id'                 => $media->id,
-			'media_key'          => $media->media_key ?? null,
-			'source_user_id'     => $media->source_user_id ?? null,
-			'type'               => $media->type,
-			'url'                => $media->media_url_https ?? $media->media_url,
-			'alt_text'           => $media->ext_alt_text ?? '',
-			'possibly_sensitive' => $tweet->ext_sensitive_media_warning ?? null,
-			'width'              => $media->original_info->width ?? null,
-			'height'             => $media->original_info->height ?? null,
-			'variants'           => $media->video_info->variants ?? null,
-		];
+	public static function parseMedia(object $media):stdClass{
+		$m = new stdClass;
+
+		$m->id                 = $media->id;
+		$m->media_key          = $media->media_key ?? null;
+		$m->source_user_id     = $media->source_user_id ?? null;
+		$m->type               = $media->type;
+		$m->url                = $media->media_url_https ?? $media->media_url;
+		$m->alt_text           = $media->ext_alt_text ?? '';
+		$m->possibly_sensitive = $tweet->ext_sensitive_media_warning ?? null;
+		$m->width              = $media->original_info->width ?? null;
+		$m->height             = $media->original_info->height ?? null;
+		$m->variants           = $media->video_info->variants ?? null;
+
+		return $m;
 	}
 
 	/**
@@ -203,14 +231,17 @@ class Tweet implements JsonSerializable{
 		return get_object_vars($this);
 	}
 
-	public function toHTML(array $users):string{
-
-
-
-		return $this->renderTweet($this, $users);
+	/**
+	 *
+	 */
+	public function toHTML():string{
+		return $this->renderTweet($this);
 	}
 
-	protected function renderTweet(Tweet $tweet, array $users, bool $qt = false):string{
+	/**
+	 *
+	 */
+	protected function renderTweet(Tweet $tweet, bool $qt = false):string{
 		$t      = $tweet;
 		$status = '';
 		$quoted = '';
@@ -219,38 +250,35 @@ class Tweet implements JsonSerializable{
 		if(isset($tweet->retweeted_status) && !empty($tweet->retweeted_status)){
 			$t      = $tweet->retweeted_status;
 			$status = sprintf(
-				'<a href="https://twitter.com/%1$s/status/%2$s" target="_blank"><div class="retweet"></div>@%1$s retweeted</a>',
-				$users[$tweet->user_id]->screen_name,
-				$tweet->id
+				'<a href="https://twitter.com/%s/status/%s" target="_blank"><div class="retweet"></div>%s retweeted</a>',
+				$tweet->user->screen_name,
+				$tweet->id,
+				$tweet->user->name
 			);
 		}
 		elseif($tweet->in_reply_to_status_id !== null){
 			$status = sprintf(
-				'<a href="https://twitter.com/%1$s/status/%2$s" target="_blank"><div class="reply"></div>In reply to @%1$s</a>',
-				$users[$tweet->in_reply_to_status_id]->screen_name ?? $tweet->in_reply_to_screen_name,
-				$tweet->in_reply_to_status_id
+				'<a href="https://twitter.com/%s/status/%s" target="_blank"><div class="reply"></div>In reply to %s</a>',
+				$tweet->in_reply_to_user->screen_name ?? $tweet->in_reply_to_screen_name,
+				$tweet->in_reply_to_status_id,
+				$tweet->in_reply_to_user->name ?? '@'.$tweet->in_reply_to_screen_name
 			);
+		}
+
+		// recursion
+		if(!$qt && isset($tweet->quoted_status) && !empty($this->quoted_status)){
+			$quoted = $this->renderTweet($tweet->quoted_status, true);
 		}
 
 		if(!empty($status)){
 			$status = sprintf('<div class="status">%s</div>', $status);
 		}
 
-		if(!$qt && isset($tweet->quoted_status) && !empty($this->quoted_status)){
-			$quoted = $this->renderTweet($tweet->quoted_status, $users, true);
-		}
+		$screen_name  = $t->user->screen_name ?? '';
+		$display_name = $t->user->name ?? '';
 
-		// just ignoring missing users here, just give a warning
-#		if(!isset($users[$t['user_id']])){
-#			$logger->warning(sprintf('user not found: %s', $t['user_id']));
-#		}
-
-		$user         = $users[$t->user_id] ?? '';
-		$screen_name  = $user->screen_name ?? '';
-		$display_name = $user->name ?? '';
-
-		$profile      = sprintf('https://twitter.com/%s', $screen_name);
-		$statuslink   = sprintf('https://twitter.com/%s/status/%s', $display_name, $t->id);
+		$profilelink  = sprintf('https://twitter.com/%s', $screen_name);
+		$statuslink   = sprintf('https://twitter.com/%s/status/%s', $screen_name, $t->id);
 		$datetime     = date('c', $t->created_at);
 		$dateDisplay  = date('M d, Y', $t->created_at);
 		$text         = Util::parseLinks($t->text);
@@ -259,9 +287,8 @@ class Tweet implements JsonSerializable{
 			$media .= '<div class="images">';
 
 			foreach($t->media as $m){
-				$m = (array)$m;
-				if($m['type'] === 'photo'){
-					$media .= sprintf('<div><img alt="%s" src="%s" /></div>', $m['alt_text'], $m['url']);
+				if($m->type === 'photo'){
+					$media .= sprintf('<div><img alt="%s" src="%s" /></div>', $m->alt_text, $m->url);
 				}
 			}
 
@@ -274,8 +301,8 @@ class Tweet implements JsonSerializable{
 	<div class="avatar"><img class="avatar-'.$screen_name.'" alt="'.$screen_name.' avatar" /></div>
 	<div class="body">
 		<div class="header">
-			<a href="'.$profile.'" target="_blank"><span class="user">'.$display_name.'</span></a>
-			<a href="'.$profile.'" target="_blank"><span class="screenname">@'.$screen_name.'</span></a>
+			<a href="'.$profilelink.'" target="_blank"><span class="user">'.$display_name.'</span></a>
+			<a href="'.$profilelink.'" target="_blank"><span class="screenname">@'.$screen_name.'</span></a>
 			<span>·</span>
 			<a href="'.$statuslink.'" target="_blank"><time class="timestamp" datetime="'.$datetime.'">'.$dateDisplay.'</time></a>
 		</div>
