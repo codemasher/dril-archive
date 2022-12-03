@@ -58,7 +58,7 @@ $timelineJSON = __DIR__.'/../.build/dril.json';
 
 // on GitHub actions: clone repo, checkout gh-pages, use previous build
 if(isset($_SERVER['GITHUB_ACTIONS'])){
-#	$timelineJSON = realpath(__DIR__.'/../previous-build/dril.json');
+	$timelineJSON = realpath(__DIR__.'/../previous-build/dril.json');
 }
 
-(new DrilArchive($options))->compileDrilTimeline($timelineJSON, true);
+(new DrilArchive($options))->compileDrilTimeline($timelineJSON, false);
