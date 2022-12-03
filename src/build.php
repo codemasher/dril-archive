@@ -36,7 +36,7 @@ $now = time();
 
 $options = new DrilArchiveOptions([
 	// HTTPOptions
-	'ca_info'                 => realpath(__DIR__.'/../config/cacert.pem'), // https://curl.haxx.se/ca/cacert.pem
+	'ca_info'                 => __DIR__.'/../config/cacert.pem', // https://curl.haxx.se/ca/cacert.pem
 	'user_agent'              => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)',
 	// DrilArchiveOptions
 	'builddir'                => __DIR__.'/../.build',
