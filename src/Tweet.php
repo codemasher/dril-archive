@@ -13,6 +13,7 @@ namespace codemasher\DrilArchive;
 use InvalidArgumentException;
 use JsonSerializable;
 use stdClass;
+use function count;
 use function date;
 use function get_object_vars;
 use function in_array;
@@ -220,6 +221,11 @@ class Tweet implements JsonSerializable{
 		$m->width              = $media->original_info->width ?? null;
 		$m->height             = $media->original_info->height ?? null;
 		$m->variants           = $media->video_info->variants ?? null;
+		$m->aspect_ratio       = null;
+
+		if($m->width > 0 && $m->height > 0){
+			$m->aspect_ratio = round($m->width / $m->height, 5);
+		}
 
 		return $m;
 	}
@@ -282,13 +288,20 @@ class Tweet implements JsonSerializable{
 		$datetime     = date('c', $t->created_at);
 		$dateDisplay  = date('M d, Y', $t->created_at);
 		$text         = Util::parseLinks($t->text);
+		$mediacount   = count($t->media);
 
 		if(!empty($t->media)){
-			$media .= '<div class="images">';
+			$media .= sprintf('<div class="images grid-%s">', $mediacount);
 
 			foreach($t->media as $m){
 				if($m->type === 'photo'){
-					$media .= sprintf('<div><img alt="%s" src="%s" /></div>', $m->alt_text, $m->url);
+					$media .= sprintf(
+						'<div style="aspect-ratio: %s;"><img alt="%s" src="%s" style="%s"/></div>',
+						$m->aspect_ratio,
+						$m->alt_text,
+						$m->url,
+						$m->width < $m->height ? 'width: 100%; height: auto;' : 'width: auto; height: 100%;'
+					);
 				}
 			}
 
