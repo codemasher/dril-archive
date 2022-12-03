@@ -54,7 +54,7 @@ $options = new DrilArchiveOptions([
 ]);
 
 // we need this one here just for the first run in order to convert to the new format
-$timelineJSON = __DIR__.'/../output/dril.json';
+$timelineJSON = __DIR__.'/../.build/dril.json';
 #$timelineJSON = null;
 // on GitHub actions: clone repo, checkout gh-pages, use previous build
 #if(isset($_SERVER['GITHUB_ACTIONS'])){
