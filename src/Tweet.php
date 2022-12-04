@@ -19,6 +19,7 @@ use function get_object_vars;
 use function in_array;
 use function json_decode;
 use function json_encode;
+use function nl2br;
 use function number_format;
 use function property_exists;
 use function sprintf;
@@ -287,7 +288,7 @@ class Tweet implements JsonSerializable{
 		$statuslink   = sprintf('https://twitter.com/%s/status/%s', $screen_name, $t->id);
 		$datetime     = date('c', $t->created_at);
 		$dateDisplay  = date('M d, Y', $t->created_at);
-		$text         = Util::parseLinks($t->text);
+		$text         = Util::parseLinks(nl2br($t->text));
 		$mediacount   = count($t->media);
 
 		if(!empty($t->media)){
