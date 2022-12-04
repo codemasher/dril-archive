@@ -221,7 +221,7 @@ class Timeline implements ArrayAccess, Countable, JsonSerializable{
 			// create pagination
 			$pagination = '';
 
-			if($tweetsPerPage !== null && $pages > 0 && ($maxPages === null || $maxPages > 1)){
+			if($tweetsPerPage !== null && $pages > 1 && ($maxPages === null || $maxPages > 1)){
 				$pagination = '<div id="pagination-wrapper">';
 
 				for($i = 0; $i < $pages; $i++){
