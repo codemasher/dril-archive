@@ -3,7 +3,7 @@
 
 on:
   schedule:
-    - cron: "0 12 15 * *"
+    - cron: "0 18 15 * *"
 
 name: "Counters"
 
