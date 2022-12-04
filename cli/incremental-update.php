@@ -25,7 +25,7 @@ require_once __DIR__.'/../vendor/autoload.php';
  */
 
 $now   = time();
-$since = $now - 86400 * 14; // x days, standard API access will probably return only 20 tweets either way
+$since = $now - 86400 * 7; // x days, standard API access will probably return only 20 tweets either way
 $query = sprintf('from:dril include:nativeretweets since:%s until:%s', date('Y-m-d', $since), date('Y-m-d', $now));
 
 

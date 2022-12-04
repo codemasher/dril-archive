@@ -69,6 +69,7 @@ class DrilArchive{
 	protected array $tempUsers     = [];
 	protected array $tempTimeline  = [];
 	protected string $cachedir     = '';
+	protected int $since;
 
 	public function __construct(SettingsContainerInterface $options){
 		$this->options = $options;
@@ -80,6 +81,7 @@ class DrilArchive{
 		// invoke the worker instances
 		$this->logger   = new Logger('log', [$logHandler]); // PSR-3
 		$this->http     = new CurlClient(options: $this->options, logger: $this->logger); // PSR-18
+
 		$this->cachedir = Util::mkdir($this->options->builddir.DIRECTORY_SEPARATOR.Util::string2url($this->options->query));
 	}
 
@@ -179,7 +181,7 @@ class DrilArchive{
 		Util::saveJSON($savepath, $timeline);
 
 		$this->logger->info(sprintf(
-			'fetched %d tweets from %d users in %s',
+			'fetched %d tweet(s) from %d user(s) in %s',
 			$timeline->count(),
 			$timeline->countUsers(),
 			$savepath
@@ -217,14 +219,14 @@ class DrilArchive{
 		$this->tempUsers    = [];
 		$retweets           = [];
 		$csv                = [];
-		$rtSince          ??= mktime(0, 0, 0, 1, 1, 2006);
+		$this->since        = $rtSince ?? mktime(0, 0, 0, 1, 1, 2006);
 
 		if($timelineJSON !== null){
 			$tlJSON = Util::loadJSON($timelineJSON);
 
 			// collect the retweet IDs from the parsed timeline
 			foreach($tlJSON->tweets as $tweet){
-				if($scanRTs && str_starts_with($tweet->text, 'RT @') && $tweet->created_at > $rtSince){
+				if($scanRTs && str_starts_with($tweet->text, 'RT @') && $tweet->created_at > $this->since){
 					$retweets[]              = $tweet->id;
 					$this->tempTimeline[$tweet->id] = null;
 				}
@@ -238,7 +240,7 @@ class DrilArchive{
 				$this->tempUsers[$user->id] = new User($user);
 			}
 
-			$this->logger->info(sprintf('parsed %d tweets and %d users from %s', count($tlJSON->tweets), count($tlJSON->users), realpath($timelineJSON)));
+			$this->logger->info(sprintf('parsed %d tweet(s) and %d user(s) from %s', count($tlJSON->tweets), count($tlJSON->users), realpath($timelineJSON)));
 		}
 
 		if($this->options->fetchFromAdaptiveSearch){
@@ -315,7 +317,10 @@ class DrilArchive{
 
 			foreach($json->statuses as $tweet){
 				$this->tempUsers[$tweet->user->id] = new User($tweet->user, true);
-				$this->tempTimeline[$tweet->id]    = new Tweet($tweet, true);
+
+				if(!isset($this->tempTimeline[$tweet->id])){
+					$this->tempTimeline[$tweet->id] = new Tweet($tweet, true);
+				}
 			}
 
 			$this->logger->info(sprintf('[%s] fetched %d tweets for "%s", last id: %s', $count, count($json->statuses), $this->options->query, $json->search_metadata->max_id));
@@ -596,7 +601,7 @@ class DrilArchive{
 				$rtIDs[$id] = $rtID;
 			}
 
-			$this->logger->info(sprintf('fetched meta for %s tweets', count($ids)));
+			$this->logger->info(sprintf('fetched meta for %s tweet(s)', count($ids)));
 		}
 
 		return $rtIDs;
@@ -662,7 +667,7 @@ class DrilArchive{
 				$this->tempTimeline[$rtID] = new Tweet($v1Tweet);
 			}
 
-			$this->logger->info(sprintf('fetched data for %s tweets', count($ids)));
+			$this->logger->info(sprintf('fetched data for %s tweet(s)', count($ids)));
 		}
 
 	}
@@ -702,7 +707,7 @@ class DrilArchive{
 				$this->tempTimeline[$v1Tweet->id]    = new Tweet($v1Tweet, true);
 			}
 
-			$this->logger->info(sprintf('fetched data for %s tweets from CSV', count($ids)));
+			$this->logger->info(sprintf('fetched data for %s tweet(s) from CSV', count($ids)));
 		}
 
 	}
@@ -719,7 +724,7 @@ class DrilArchive{
 
 		foreach($this->tempTimeline as $id => $tweet){
 
-			if($tweet === null){
+			if($tweet === null || $tweet->created_at < $this->since){
 				continue;
 			}
 
@@ -818,7 +823,7 @@ class DrilArchive{
 				$this->tempTimeline[$id] = new Tweet($tweet);
 			}
 
-			$this->logger->info(sprintf('fetched data for %s embedded/photo tweets ', count($ids)));
+			$this->logger->info(sprintf('fetched data for %s embedded/photo tweet(s) ', count($ids)));
 		}
 
 
@@ -866,7 +871,7 @@ class DrilArchive{
 
 			$json = MessageUtil::decodeJSON($v1Response);
 
-			$this->logger->info(sprintf('fetched data for %d user profiles', count($json)));
+			$this->logger->info(sprintf('fetched data for %d user profile(s)', count($json)));
 
 			foreach($json as $user){
 				$this->tempUsers[$user->id] = new User($user, true);
