@@ -44,6 +44,7 @@ use function intval;
 use function json_decode;
 use function json_encode;
 use function md5;
+use function mktime;
 use function preg_match_all;
 use function realpath;
 use function rename;
@@ -198,18 +199,19 @@ class DrilArchive{
 	/**
 	 *
 	 */
-	public function compileDrilTimeline(string $timelineJSON = null, bool $scanRTs = true):self{
+	public function compileDrilTimeline(string $timelineJSON = null, bool $scanRTs = true, int $rtSince = null):self{
 		$this->tempTimeline = [];
 		$this->tempUsers    = [];
 		$retweets           = [];
 		$csv                = [];
+		$rtSince          ??= mktime(0, 0, 0, 1, 1, 2006);
 
 		if($timelineJSON !== null){
 			$tlJSON = Util::loadJSON($timelineJSON);
 
 			// collect the retweet IDs from the parsed timeline
 			foreach($tlJSON->tweets as $tweet){
-				if($scanRTs && str_starts_with($tweet->text, 'RT @')){
+				if($scanRTs && str_starts_with($tweet->text, 'RT @') && $tweet->created_at > $rtSince){
 					$retweets[]              = $tweet->id;
 					$this->tempTimeline[$tweet->id] = null;
 				}

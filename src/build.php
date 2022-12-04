@@ -32,7 +32,8 @@ function getToken():string{
 	return $env->get('TWITTER_BEARER');
 }
 
-$now = time();
+$now   = time();
+$since = $now - 86400 * 14;
 
 $options = new DrilArchiveOptions([
 	// HTTPOptions
@@ -48,12 +49,12 @@ $options = new DrilArchiveOptions([
 #	'adaptiveGuestToken'      => '1599107320918822914',
 #	'query'                   => 'from:dril include:nativeretweets',
 	'fetchFromAPISearch'      => true,
-	'query'                   => sprintf('from:dril include:nativeretweets since:%s until:%s', date('Y-m-d', ($now - 86400 * 7)), date('Y-m-d', $now)),
+	'query'                   => sprintf('from:dril include:nativeretweets since:%s until:%s', date('Y-m-d', $since), date('Y-m-d', $now)),
 #	'drilCSV'                 => realpath(__DIR__.'/../.build/dril.csv'), // https://docs.google.com/spreadsheets/d/1juZ8Dzx-hVCDx_JLVOKI1eHzBlURHd7u6dqkb3F8q4w
 #	'' => '',
 ]);
 
-// we need this one here just for the first run in order to convert to the new format
+// we need this one here just for the first run in order to convert to the new format (or repairs...)
 $timelineJSON = __DIR__.'/../.build/dril.json';
 
 // on GitHub actions: clone repo, checkout gh-pages, use previous build
@@ -61,4 +62,4 @@ if(isset($_SERVER['GITHUB_ACTIONS'])){
 	$timelineJSON = realpath(__DIR__.'/../previous-build/dril.json');
 }
 
-(new DrilArchive($options))->compileDrilTimeline($timelineJSON, false);
+(new DrilArchive($options))->compileDrilTimeline($timelineJSON, true, $since);
