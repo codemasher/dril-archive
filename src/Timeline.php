@@ -186,7 +186,7 @@ class Timeline implements ArrayAccess, Countable, JsonSerializable{
 	/**
 	 * @throws \Exception
 	 */
-	public function toHTML(string $outpath, int $maxTweets = null):void{
+	public function toHTML(string $outpath, int $tweetsPerPage = null, int $maxPages = null):void{
 
 		if(empty($outpath)){
 			throw new Exception('invalid html outpath');
@@ -200,12 +200,12 @@ class Timeline implements ArrayAccess, Countable, JsonSerializable{
 		$tlcount      = $this->count();
 		$headerHeight = 96;
 
-		if($maxTweets === null || $maxTweets < 0 || $maxTweets > $tlcount){
-			$maxTweets    = $tlcount;
-			$headerHeight = 48;
+		if($tweetsPerPage === null || $tweetsPerPage < 0 || $tweetsPerPage > $tlcount){
+			$tweetsPerPage = $tlcount;
+			$headerHeight  = 48;
 		}
 
-		$pages = (int)ceil($tlcount / $maxTweets);
+		$pages = (int)ceil($tlcount / $tweetsPerPage);
 		$page  = 0;
 
 		// create avatar CSS
@@ -216,12 +216,12 @@ class Timeline implements ArrayAccess, Countable, JsonSerializable{
 
 		file_put_contents($outpath.'/avatars.css', $avatarCSS);
 
-		foreach(array_chunk($this->tweets, $maxTweets) as $chunk){
+		foreach(array_chunk($this->tweets, $tweetsPerPage) as $chunk){
 
 			// create pagination
 			$pagination = '';
 
-			if($maxTweets !== null && $pages > 0){
+			if($tweetsPerPage !== null && $pages > 0 && ($maxPages === null || $maxPages > 1)){
 				$pagination = '<div id="pagination-wrapper">';
 
 				for($i = 0; $i < $pages; $i++){
@@ -258,7 +258,9 @@ class Timeline implements ArrayAccess, Countable, JsonSerializable{
 <body>
 <div id="header-wrapper">
 	<div>
-		<a href="https://codemasher.github.io/dril-archive/"><img id="header-image" src="./assets/dril.jpg" alt="Dril Archive" /></a>
+		<a href="./"><img id="header-image" src="./assets/dril.jpg" alt="Dril Archive" /></a>
+		<a href="./dril-top-liked.html">top liked</a> &bull;
+		<a href="./dril-top-retweeted.html">top retweeted</a> &bull;
 		<a href="https://twitter.com/dril" target="_blank">@dril</a> &bull;
 		<a href="https://github.com/codemasher/dril-archive#downloads" target="_blank">Download</a> &bull;
 		<a href="https://github.com/codemasher/dril-archive" target="_blank">GitHub</a>
@@ -276,8 +278,12 @@ class Timeline implements ArrayAccess, Countable, JsonSerializable{
 			$filename = sprintf('%s/%s.html', $outpath, ($page === 0 ? 'index' : 'page-'.($page + 1)));
 			file_put_contents($filename, $html);
 			$page++;
-		}
 
+			if($maxPages !== null && $page >= $maxPages){
+				break;
+			}
+
+		}
 
 	}
 

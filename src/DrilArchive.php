@@ -186,12 +186,25 @@ class DrilArchive{
 		));
 
 
-		// create a single html file that contains all tweets
-		$timeline->toHTML($this->options->outdir);
-		// rename
-		rename($this->options->outdir.'/index.html', $this->options->outdir.'/dril.html');
 		// create a paginated version
 		$timeline->toHTML($this->options->outdir, 1000);
+
+		// create a single html file that contains all tweets
+		$timeline->toHTML($this->options->builddir);
+		// rename/move
+		rename($this->options->builddir.'/index.html', $this->options->outdir.'/dril.html');
+
+		// create top* timelines
+		$timeline->sortby('retweet_count', SORT_DESC);
+		$timeline->toHTML($this->options->builddir, 250, 1);
+		// rename
+		rename($this->options->builddir.'/index.html', $this->options->outdir.'/dril-top-retweeted.html');
+
+		$timeline->sortby('favorite_count', SORT_DESC);
+		$timeline->toHTML($this->options->builddir, 250, 1);
+		// rename
+		rename($this->options->builddir.'/index.html', $this->options->outdir.'/dril-top-liked.html');
+
 
 		return $this;
 	}
