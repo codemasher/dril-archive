@@ -5,7 +5,7 @@
  * @created      28.11.2022
  * @author       smiley <smiley@chillerlan.net>
  * @copyright    2022 smiley
- * @license      MIT
+ * @license      WTFPL
  */
 
 namespace codemasher\DrilArchive;

@@ -304,8 +304,7 @@ class DrilArchive{
 			foreach($json->statuses as $tweet){
 				$this->tempUsers[$tweet->user->id] = new User($tweet->user, true);
 				unset($tweet->user);
-				$this->tempTweets[$tweet->id] = new Tweet($tweet, true);
-
+				$this->tempTimeline[$tweet->id] = new Tweet($tweet, true);
 			}
 
 			$this->logger->info(sprintf('[%s] fetched %d tweets for "%s", last id: %s', $count, count($json->statuses), $this->options->query, $json->search_metadata->max_id));
