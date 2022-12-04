@@ -65,10 +65,8 @@ class DrilArchive{
 	protected ClientInterface $http;
 	protected LoggerInterface $logger;
 
-	protected array $tempTweets    = [];
 	protected array $tempUsers     = [];
 	protected array $tempTimeline  = [];
-	protected string $lastCursor   = '';
 	protected string $cachedir     = '';
 
 	public function __construct(SettingsContainerInterface $options){
@@ -202,7 +200,6 @@ class DrilArchive{
 	 */
 	public function compileDrilTimeline(string $timelineJSON = null, bool $scanRTs = true):self{
 		$this->tempTimeline = [];
-		$this->tempTweets   = [];
 		$this->tempUsers    = [];
 		$retweets           = [];
 		$csv                = [];
@@ -303,8 +300,7 @@ class DrilArchive{
 
 			foreach($json->statuses as $tweet){
 				$this->tempUsers[$tweet->user->id] = new User($tweet->user, true);
-				unset($tweet->user);
-				$this->tempTimeline[$tweet->id] = new Tweet($tweet, true);
+				$this->tempTimeline[$tweet->id]    = new Tweet($tweet, true);
 			}
 
 			$this->logger->info(sprintf('[%s] fetched %d tweets for "%s", last id: %s', $count, count($json->statuses), $this->options->query, $json->search_metadata->max_id));
@@ -333,10 +329,10 @@ class DrilArchive{
 	 *
 	 */
 	protected function getTimelineFromAdaptiveSearch():void{
-		$this->lastCursor = '';
-
-		$hash  = md5($this->options->query);
-		$count = 0;
+		$lastCursor = '';
+		$tempTweets = [];
+		$hash       = md5($this->options->query);
+		$count      = 0;
 
 		while(true){
 			// the query parameters from the call to https://twitter.com/i/api/2/search/adaptive.json in original order
@@ -373,7 +369,7 @@ class DrilArchive{
 				'tweet_search_mode'                    => 'live',
 				'count'                                => '100',
 				'query_source'                         => 'typed_query',
-				'cursor'                               => $this->lastCursor,
+				'cursor'                               => $lastCursor,
 				'pc'                                   => '1',
 				'spelling_corrections'                 => '1',
 				'include_ext_edit_control'             => 'true',
@@ -391,15 +387,15 @@ class DrilArchive{
 				break;
 			}
 
-			$this->logger->info(sprintf('[%s] fetched data for "%s", cursor: %s', $count, $this->options->query, $this->lastCursor));
+			$this->logger->info(sprintf('[%s] fetched data for "%s", cursor: %s', $count, $this->options->query, $lastCursor));
 
-			if(!$this->parseAdaptiveSearchResponse($response)){
+			if(!$this->parseAdaptiveSearchResponse($response, $tempTweets, $lastCursor)){
 				break;
 			}
 
 			$count++;
 
-			if(empty($this->lastCursor)){
+			if(empty($lastCursor)){
 				break;
 			}
 
@@ -407,11 +403,11 @@ class DrilArchive{
 
 		// update timeline
 		foreach($this->tempTimeline as $id => &$v){
-			$tweet = $this->tempTweets[$id];
+			$tweet = $tempTweets[$id];
 
 			// embed quoted tweets
-			if(isset($tweet->quoted_status_id) && isset($this->tempTweets[$tweet->quoted_status_id])){
-				$tweet->setQuotedStatus($this->tempTweets[$tweet->quoted_status_id]);
+			if(isset($tweet->quoted_status_id) && isset($tempTweets[$tweet->quoted_status_id])){
+				$tweet->setQuotedStatus($tempTweets[$tweet->quoted_status_id]);
 			}
 
 			$v = $tweet;
@@ -425,7 +421,7 @@ class DrilArchive{
 	/**
 	 * parse the API response and fill the data arrays (passed by reference)
 	 */
-	protected function parseAdaptiveSearchResponse(ResponseInterface $response):bool{
+	protected function parseAdaptiveSearchResponse(ResponseInterface $response, array &$tempTweets, string &$lastCursor):bool{
 
 		try{
 			$json = MessageUtil::decodeJSON($response);
@@ -443,7 +439,7 @@ class DrilArchive{
 		}
 
 		foreach($json->globalObjects->tweets as $tweet){
-			$this->tempTweets[$tweet->id_str] = new Tweet($tweet, true);
+			$tempTweets[$tweet->id_str] = new Tweet($tweet, true);
 		}
 
 		foreach($json->globalObjects->users as $user){
@@ -460,17 +456,17 @@ class DrilArchive{
 						$this->tempTimeline[$instruction->content->item->content->tweet->id] = null;
 					}
 					elseif($instruction->entryId === 'sq-cursor-bottom'){
-						$this->lastCursor = $instruction->content->operation->cursor->value;
+						$lastCursor = $instruction->content->operation->cursor->value;
 					}
 
 				}
 
 			}
 			elseif(isset($i->replaceEntry->entryIdToReplace) && $i->replaceEntry->entryIdToReplace === 'sq-cursor-bottom'){
-				$this->lastCursor = $i->replaceEntry->entry->content->operation->cursor->value;
+				$lastCursor = $i->replaceEntry->entry->content->operation->cursor->value;
 			}
 			else{
-				$this->lastCursor = '';
+				$lastCursor = '';
 			}
 		}
 
@@ -635,9 +631,6 @@ class DrilArchive{
 
 			foreach($v1json as $v1Tweet){
 				$this->tempUsers[$v1Tweet->user->id] = new User($v1Tweet->user, true);
-
-				unset($v1Tweet->user);
-
 				$this->tempTimeline[$rtIDs[$v1Tweet->id]]->setRetweetedStatus(new Tweet($v1Tweet, true));
 			}
 
@@ -691,7 +684,6 @@ class DrilArchive{
 
 			foreach($v1json as $v1Tweet){
 				$this->tempUsers[$v1Tweet->user->id] = new User($v1Tweet->user, true);
-				unset($v1Tweet->user);
 				$this->tempTimeline[$v1Tweet->id]    = new Tweet($v1Tweet, true);
 			}
 
@@ -761,7 +753,6 @@ class DrilArchive{
 
 			foreach($v1json as $v1Tweet){
 				$this->tempUsers[$v1Tweet->user->id] = new User($v1Tweet->user, true);
-				unset($v1Tweet->user);
 
 				$id = array_search($v1Tweet->id, $statuses);
 
