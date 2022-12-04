@@ -10,11 +10,13 @@
 
 namespace codemasher\DrilArchive;
 
+use chillerlan\DotEnv\DotEnv;
 use InvalidArgumentException;
 use RuntimeException;
 use function file_exists;
 use function file_get_contents;
 use function file_put_contents;
+use function getenv;
 use function htmlentities;
 use function in_array;
 use function json_decode;
@@ -139,5 +141,20 @@ class Util{
 		return trim($lowercase ? strtolower($str) : $str, '-');
 	}
 
+	/**
+	 * attempt to get a bearer token from the environment.
+	 */
+	public static function getToken(string $cfgdir, string $envFile, string $envVar):string{
+
+		// get the token from the environment/config
+		if(isset($_SERVER['GITHUB_ACTIONS'])){
+			return getenv($envVar);
+		}
+
+		// a dotenv instance for the config
+		$env = (new DotEnv($cfgdir, $envFile, false))->load();
+
+		return $env->get($envVar);
+	}
 
 }

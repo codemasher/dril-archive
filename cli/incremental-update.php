@@ -8,14 +8,13 @@
  * @license      WTFPL
  */
 
-use chillerlan\DotEnv\DotEnv;
 use codemasher\DrilArchive\DrilArchive;
 use codemasher\DrilArchive\DrilArchiveOptions;
+use codemasher\DrilArchive\Util;
 
 ini_set('date.timezone', 'UTC');
 
 require_once __DIR__.'/../vendor/autoload.php';
-
 
 /*
  * The search query
@@ -36,9 +35,9 @@ $options->user_agent              = 'drilArchive/1.0 +https://github.com/codemas
 // DrilArchiveOptions
 $options->builddir                = __DIR__.'/../.build';
 $options->outdir                  = __DIR__.'/../output';
-$options->fromCachedApiResponses  = false;
+$options->fromCachedApiResponses  = true;
 $options->fetchFromAPISearch      = true;
-$options->apiToken                = getToken();
+$options->apiToken                = Util::getToken(__DIR__.'/../config', '.env', 'TWITTER_BEARER');
 $options->query                   = $query;
 
 
@@ -52,21 +51,4 @@ if(isset($_SERVER['GITHUB_ACTIONS'])){
 
 (new DrilArchive($options))->compileDrilTimeline($timelineJSON, true, $since);
 
-
 exit;
-
-/**
- * attempt to get a bearer token from the environment.
- */
-function getToken():string{
-
-	// get the token from the environment/config
-	if(isset($_SERVER['GITHUB_ACTIONS'])){
-		return getenv('TWITTER_BEARER');
-	}
-
-	// a dotenv instance for the config
-	$env = (new DotEnv(__DIR__.'/../config', '.env', false))->load();
-
-	return $env->get('TWITTER_BEARER');
-}

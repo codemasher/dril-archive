@@ -10,6 +10,7 @@
 
 use codemasher\DrilArchive\DrilArchive;
 use codemasher\DrilArchive\DrilArchiveOptions;
+use codemasher\DrilArchive\Util;
 
 ini_set('date.timezone', 'UTC');
 
@@ -60,6 +61,7 @@ $options->builddir                = __DIR__.'/../.build';
 $options->outdir                  = __DIR__.'/../output';
 $options->fromCachedApiResponses  = true;
 $options->fetchFromAdaptiveSearch = true;
+$options->apiToken                = Util::getToken(__DIR__.'/../config', '.env', 'TWITTER_BEARER');
 $options->adaptiveRequestToken    = $requestToken;
 $options->adaptiveGuestToken      = $guestToken;
 $options->query                   = $query;
