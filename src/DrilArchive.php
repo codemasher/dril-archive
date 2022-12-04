@@ -880,4 +880,81 @@ class DrilArchive{
 
 	}
 
+	/**
+	 * update favourite/like counters
+	 */
+	public function updateCounters(string $timelineJSON):self{
+		$this->cachedir = Util::mkdir($this->options->builddir.DIRECTORY_SEPARATOR.'meta');
+		$tlJSON         = Util::loadJSON($timelineJSON);
+		$tweetIDs       = [];
+
+		foreach($tlJSON->tweets as $tweet){
+			// put the already parsed tweets in the output array
+			$this->tempTimeline[$tweet->id] = $tweet;
+
+			// skip retweets
+			if(str_starts_with($tweet->text, 'RT @')){
+				continue;
+			}
+
+			$tweetIDs[] = $tweet->id;
+		}
+
+		foreach($tlJSON->users as $user){
+			$this->tempUsers[$user->id] = new User($user);
+		}
+
+		// update counters for the collected IDs
+		$this->fetchCounters($tweetIDs);
+
+		// convert into Tweet objects
+		$this->tempTimeline = array_map(fn(object $tweet):Tweet => new Tweet($tweet), $this->tempTimeline);
+
+		// save/create output
+		$this->saveTimeline(sprintf('%s/dril.json', $this->options->outdir));
+
+		return $this;
+	}
+
+	/**
+	 *
+	 */
+	protected function fetchCounters(array $tweets):array{
+		$counters = [];
+
+		foreach(array_chunk($tweets, 100) as $i => $ids){
+
+			$v2Params = [
+				'ids'          => implode(',', $ids),
+				'tweet.fields' => 'public_metrics',
+			];
+
+			$response = $this->httpRequest('/2/tweets', $v2Params, 'meta-v2-tweets-%s');
+
+			if($response === null){
+				$this->logger->warning('could not fetch tweets from /2/tweets');
+
+				continue;
+			}
+
+			$json = MessageUtil::decodeJSON($response);
+
+			foreach($json->data as $meta){
+
+				if(!isset($meta->public_metrics)){
+					continue;
+				}
+
+				foreach(['like_count', 'retweet_count', 'reply_count', 'quote_count'] as $field){
+					$this->tempTimeline[(int)$meta->id]->{$field} = $meta->public_metrics->{$field};
+				}
+
+			}
+
+			$this->logger->info(sprintf('[%d] fetched counters for %s tweet(s)', $i, count($ids)));
+		}
+
+		return $counters;
+	}
+
 }
