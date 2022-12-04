@@ -47,7 +47,7 @@ jobs:
         run: wget -O config/cacert.pem https://curl.se/ca/cacert.pem
 
       - name: "Build"
-        run: php ./src/build.php
+        run: php ./cli/build.php
 
       - name: "Publish to gh-pages"
         uses: JamesIves/github-pages-deploy-action@v4
