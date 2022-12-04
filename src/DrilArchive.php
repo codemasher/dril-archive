@@ -81,8 +81,6 @@ class DrilArchive{
 		// invoke the worker instances
 		$this->logger   = new Logger('log', [$logHandler]); // PSR-3
 		$this->http     = new CurlClient(options: $this->options, logger: $this->logger); // PSR-18
-
-		$this->cachedir = Util::mkdir($this->options->builddir.DIRECTORY_SEPARATOR.Util::string2url($this->options->query));
 	}
 
 	/**
@@ -215,6 +213,7 @@ class DrilArchive{
 	 *
 	 */
 	public function compileDrilTimeline(string $timelineJSON = null, bool $scanRTs = true, int $rtSince = null):self{
+		$this->cachedir     = Util::mkdir($this->options->builddir.DIRECTORY_SEPARATOR.Util::string2url($this->options->query));
 		$this->tempTimeline = [];
 		$this->tempUsers    = [];
 		$retweets           = [];
@@ -407,7 +406,7 @@ class DrilArchive{
 				break;
 			}
 
-			$this->logger->info(sprintf('[%s] fetched data for "%s", cursor: %s', $count, $this->options->query, $lastCursor));
+			$this->logger->info(sprintf('[%d] fetched data for "%s", cursor: %s', $count, $this->options->query, $lastCursor));
 
 			if(!$this->parseAdaptiveSearchResponse($response, $tempTweets, $lastCursor)){
 				break;
@@ -567,7 +566,7 @@ class DrilArchive{
 	protected function fetchRTMeta(array $retweets):array{
 		$rtIDs = [];
 
-		foreach(array_chunk($retweets, 100) as $ids){
+		foreach(array_chunk($retweets, 100) as $i => $ids){
 
 			$v2Params = [
 				'ids'          => implode(',', $ids),
@@ -601,7 +600,7 @@ class DrilArchive{
 				$rtIDs[$id] = $rtID;
 			}
 
-			$this->logger->info(sprintf('fetched meta for %s tweet(s)', count($ids)));
+			$this->logger->info(sprintf('[%d] fetched meta for %s tweet(s)', $i, count($ids)));
 		}
 
 		return $rtIDs;
@@ -615,7 +614,7 @@ class DrilArchive{
 		// we're gonna fetch the metadata for the retweet status from the v2 endpoint first
 		$rtIDs = $this->fetchRTMeta($retweets);
 
-		foreach(array_chunk(array_keys($rtIDs), 100) as $ids){
+		foreach(array_chunk(array_keys($rtIDs), 100) as $i => $ids){
 
 			$v1Params = [
 				'id'                   => implode(',', $ids),
@@ -667,7 +666,7 @@ class DrilArchive{
 				$this->tempTimeline[$rtID] = new Tweet($v1Tweet);
 			}
 
-			$this->logger->info(sprintf('fetched data for %s tweet(s)', count($ids)));
+			$this->logger->info(sprintf('[%d] fetched data for %s tweet(s)', $i, count($ids)));
 		}
 
 	}
@@ -681,7 +680,7 @@ class DrilArchive{
 			return;
 		}
 
-		foreach(array_chunk($csv, 100) as $ids){
+		foreach(array_chunk($csv, 100) as $i => $ids){
 
 			$v1Params = [
 				'id'                   => implode(',', $ids),
@@ -707,7 +706,7 @@ class DrilArchive{
 				$this->tempTimeline[$v1Tweet->id]    = new Tweet($v1Tweet, true);
 			}
 
-			$this->logger->info(sprintf('fetched data for %s tweet(s) from CSV', count($ids)));
+			$this->logger->info(sprintf('[%d] fetched data for %s tweet(s) from CSV', $i, count($ids)));
 		}
 
 	}
@@ -750,7 +749,7 @@ class DrilArchive{
 
 		$this->logger->info(sprintf('matched %d tweets with embedded media', count($matches)));
 
-		foreach(array_chunk($statuses, 100) as $ids){
+		foreach(array_chunk($statuses, 100) as $i => $ids){
 
 			$v1Params = [
 				'id'                   => implode(',', $ids),
@@ -823,7 +822,7 @@ class DrilArchive{
 				$this->tempTimeline[$id] = new Tweet($tweet);
 			}
 
-			$this->logger->info(sprintf('fetched data for %s embedded/photo tweet(s) ', count($ids)));
+			$this->logger->info(sprintf('[%d] fetched data for %s embedded/photo tweet(s) ', $i, count($ids)));
 		}
 
 
@@ -853,7 +852,7 @@ class DrilArchive{
 		}
 
 
-		foreach(array_chunk(array_keys($u), 100) as $ids){
+		foreach(array_chunk(array_keys($u), 100) as $i => $ids){
 
 			$v1Params = [
 				'user_id'          => implode(',', $ids),
@@ -871,7 +870,7 @@ class DrilArchive{
 
 			$json = MessageUtil::decodeJSON($v1Response);
 
-			$this->logger->info(sprintf('fetched data for %d user profile(s)', count($json)));
+			$this->logger->info(sprintf('[%d] fetched data for %d user profile(s)', $i, count($json)));
 
 			foreach($json as $user){
 				$this->tempUsers[$user->id] = new User($user, true);

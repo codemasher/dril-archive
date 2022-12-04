@@ -18,9 +18,9 @@ use function str_replace;
  */
 class DrilArchiveOptions extends OAuthOptions{
 
-	protected string $apiToken;
-	protected string $adaptiveRequestToken;
-	protected string $adaptiveGuestToken;
+	protected string $apiToken = '';
+	protected string $adaptiveRequestToken = '';
+	protected string $adaptiveGuestToken = '';
 	protected bool $fetchFromAdaptiveSearch = false;
 	protected bool $fetchFromAPISearch = false;
 	protected string $builddir;
