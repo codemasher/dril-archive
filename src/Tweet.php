@@ -38,7 +38,7 @@ class Tweet implements JsonSerializable{
 	public readonly string $text;
 	public readonly ?string $source;
 	public readonly int $retweet_count;
-	public readonly int $favorite_count;
+	public readonly int $like_count;
 	public readonly int $reply_count;
 	public readonly int $quote_count;
 	public readonly bool $favorited;
@@ -118,7 +118,7 @@ class Tweet implements JsonSerializable{
 		$this->text                    = $text;
 		$this->source                  = $tweet->source ?? null;
 		$this->retweet_count           = (int)($tweet->retweet_count ?? $tweet->public_metrics->retweet_count ?? 0);
-		$this->favorite_count          = (int)($tweet->favorite_count ?? $tweet->public_metrics->like_count ?? 0);
+		$this->like_count              = (int)($tweet->favorite_count ?? $tweet->public_metrics->like_count ?? 0);
 		$this->reply_count             = (int)($tweet->reply_count ?? $tweet->public_metrics->reply_count ?? 0);
 		$this->quote_count             = (int)($tweet->quote_count ?? $tweet->public_metrics->quote_count ?? 0);
 		$this->favorited               = $tweet->favorited ?? false;
@@ -325,7 +325,7 @@ class Tweet implements JsonSerializable{
 		<div class="footer">
 			<div><div class="reply"></div>'.number_format($t->reply_count, 0, '', '.').'</div>
 			<div><div class="retweet"></div>'.number_format($t->retweet_count, 0, '', '.').'</div>
-			<div><div class="like"></div>'.number_format($t->favorite_count, 0, '', '.').'</div>
+			<div><div class="like"></div>'.number_format($t->like_count, 0, '', '.').'</div>
 		</div>
 	</div>
 </article>';

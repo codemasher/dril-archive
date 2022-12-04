@@ -56,7 +56,7 @@ class Timeline implements ArrayAccess, Countable, JsonSerializable{
 
 	public function sortby(string $sortkey, int $order = SORT_ASC):self{
 
-		$keys = ['id', 'user_id', 'created_at', 'retweet_count', 'favorite_count', 'reply_count', 'quote_count', 'conversation_id'];
+		$keys = ['id', 'user_id', 'created_at', 'retweet_count', 'like_count', 'reply_count', 'quote_count', 'conversation_id'];
 
 		if(!in_array($sortkey, $keys)){
 			throw new RuntimeException(sprintf('invalid sort key: %s', $sortkey));
