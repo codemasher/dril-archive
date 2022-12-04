@@ -260,7 +260,7 @@ class Timeline implements ArrayAccess, Countable, JsonSerializable{
 	<div>
 		<a href="https://codemasher.github.io/dril-archive/"><img id="header-image" src="./assets/dril.jpg" alt="Dril Archive" /></a>
 		<a href="https://twitter.com/dril" target="_blank">@dril</a> &bull;
-		<a href="https://github.com/codemasher/dril-archive/tree/gh-pages" target="_blank">Download</a> &bull;
+		<a href="https://github.com/codemasher/dril-archive#downloads" target="_blank">Download</a> &bull;
 		<a href="https://github.com/codemasher/dril-archive" target="_blank">GitHub</a>
 	</div>
 </div>'.$pagination.'
