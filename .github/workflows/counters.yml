@@ -1,0 +1,64 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+# https://github.com/sebastianbergmann/phpunit/blob/master/.github/workflows/ci.yml
+
+on:
+  schedule:
+    - cron: "0 12 15 * *"
+
+name: "Counters"
+
+jobs:
+
+  build-docs:
+    name: "Update counters and publish to GH pages"
+
+    runs-on: ubuntu-latest
+
+    env:
+      TWITTER_BEARER: ${{ secrets.TWITTER_BEARER }}
+
+    steps:
+      - name: "Checkout sources"
+        uses: actions/checkout@v3
+
+      - name: "Checkout previous gh-pages deployment"
+        uses: actions/checkout@v3
+        with:
+          ref: gh-pages
+          path: previous-build
+
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+          coverage: none
+          extensions: curl, json, openssl
+
+      - name: "Install dependencies with composer"
+        uses: ramsey/composer-install@v2
+
+      - name: "Fetch cacert.pem from curl.haxx.se"
+        run: wget -O config/cacert.pem https://curl.se/ca/cacert.pem
+
+      - name: "Update counters"
+        run: php ./cli/update-counters.php
+
+      - name: "Publish to gh-pages"
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: output
+          clean: true
+
+      - name: "Upload artifacts"
+        uses: actions/upload-artifact@v3
+#        if: contains(github.ref_type, 'branch')
+        with:
+          name: dril-archive-${{ github.sha }}
+          path: output
+
+#      - name: "Attach file to release"
+#        uses: softprops/action-gh-release@v1
+#        if: contains(github.ref_type, 'tag')
+#        with:
+#          files: ./output/**
