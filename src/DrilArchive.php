@@ -150,7 +150,7 @@ class DrilArchive{
 	/**
 	 *
 	 */
-	protected function saveTimeline(string $savepath):self{
+	protected function saveTimeline():self{
 		$timeline = new Timeline;
 
 		foreach($this->tempTimeline as $id => $tweet){
@@ -175,16 +175,8 @@ class DrilArchive{
 
 		$timeline->sortby('id', SORT_DESC);
 
-		// save
-		Util::saveJSON($savepath, $timeline);
-
-		$this->logger->info(sprintf(
-			'fetched %d tweet(s) from %d user(s) in %s',
-			$timeline->count(),
-			$timeline->countUsers(),
-			$savepath
-		));
-
+		// save JSON
+		Util::saveJSON(sprintf('%s/%s.json', $this->options->outdir, $this->options->filename), $timeline);
 
 		// create a paginated version
 		$timeline->toHTML($this->options->outdir, 1000);
@@ -192,18 +184,26 @@ class DrilArchive{
 		// create a single html file that contains all tweets
 		$timeline->toHTML($this->options->builddir);
 		// rename/move
-		rename($this->options->builddir.'/index.html', $this->options->outdir.'/dril.html');
+		rename($this->options->builddir.'/index.html', sprintf('%s/%s.html', $this->options->outdir, $this->options->filename));
 
 		// create top* timelines
 		$timeline->sortby('retweet_count', SORT_DESC);
 		$timeline->toHTML($this->options->builddir, 250, 1);
 		// rename
-		rename($this->options->builddir.'/index.html', $this->options->outdir.'/dril-top-retweeted.html');
+		rename($this->options->builddir.'/index.html', sprintf('%s/%s-top-retweeted.html', $this->options->outdir, $this->options->filename));
 
 		$timeline->sortby('like_count', SORT_DESC);
 		$timeline->toHTML($this->options->builddir, 250, 1);
 		// rename
-		rename($this->options->builddir.'/index.html', $this->options->outdir.'/dril-top-liked.html');
+		rename($this->options->builddir.'/index.html', sprintf('%s/%s-top-liked.html', $this->options->outdir, $this->options->filename));
+
+		$this->logger->info(sprintf(
+			'saved %d tweet(s) from %d user(s) in %s as "%s[.ext]"',
+			$timeline->count(),
+			$timeline->countUsers(),
+			$this->options->outdir,
+			$this->options->filename
+		));
 
 
 		return $this;
@@ -220,7 +220,7 @@ class DrilArchive{
 		$csv                = [];
 		$this->since        = $rtSince ?? mktime(0, 0, 0, 1, 1, 2006);
 
-		if($timelineJSON !== null){
+		if($timelineJSON){
 			$tlJSON = Util::loadJSON($timelineJSON);
 
 			// collect the retweet IDs from the parsed timeline
@@ -250,7 +250,7 @@ class DrilArchive{
 			$this->getTimelineFromAPISearch();
 		}
 
-		if($this->options->drilCSV !== null){
+		if($this->options->drilCSV){
 
 			$drilCSV = $this->parseDrilCSV($this->options->drilCSV);
 			// collect RT IDs from the CSV
@@ -279,7 +279,7 @@ class DrilArchive{
 		$this->fetchUserProfiles();
 
 		// save output
-		$this->saveTimeline(sprintf('%s/dril.json', $this->options->outdir));
+		$this->saveTimeline();
 
 		return $this;
 	}
@@ -432,9 +432,6 @@ class DrilArchive{
 			$v = $tweet;
 		}
 
-
-		// save the output
-#		$this->saveTimeline(sprintf('%s/%s.json', $this->cachedir, $hash));
 	}
 
 	/**
@@ -911,7 +908,7 @@ class DrilArchive{
 		$this->tempTimeline = array_map(fn(object $tweet):Tweet => new Tweet($tweet), $this->tempTimeline);
 
 		// save/create output
-		$this->saveTimeline(sprintf('%s/dril.json', $this->options->outdir));
+		$this->saveTimeline();
 
 		return $this;
 	}

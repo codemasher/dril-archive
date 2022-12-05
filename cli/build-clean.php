@@ -66,7 +66,7 @@ $options->adaptiveRequestToken    = $requestToken;
 $options->adaptiveGuestToken      = $guestToken;
 $options->query                   = $query;
 // https://docs.google.com/spreadsheets/d/1juZ8Dzx-hVCDx_JLVOKI1eHzBlURHd7u6dqkb3F8q4w
-$options->drilCSV = realpath(__DIR__.'/../.build/dril.csv');
+$options->drilCSV                 = realpath(__DIR__.'/../.build/dril.csv');
 
 
 (new DrilArchive($options))->compileDrilTimeline();

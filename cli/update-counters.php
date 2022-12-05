@@ -28,11 +28,11 @@ $options->fromCachedApiResponses  = true;
 $options->apiToken                = Util::getToken(__DIR__.'/../config', '.env', 'TWITTER_BEARER');
 
 
-$timelineJSON = __DIR__.'/../.build/dril.json';
+$timelineJSON = realpath(sprintf('%s/../output/%s.json', __DIR__, $options->filename));
 
 // on GitHub actions: clone repo, checkout gh-pages, use previous build
 if(isset($_SERVER['GITHUB_ACTIONS'])){
-	$timelineJSON = realpath(__DIR__.'/../previous-build/dril.json');
+	$timelineJSON = realpath(sprintf('%s/../previous-build/%s.json', __DIR__, $options->filename));
 }
 
 (new DrilArchive($options))->updateCounters($timelineJSON);

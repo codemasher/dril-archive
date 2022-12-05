@@ -22,11 +22,12 @@ require_once __DIR__.'/../vendor/autoload.php';
  * @see https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query
  * @see https://help.twitter.com/en/using-twitter/advanced-tweetdeck-features
  */
+$query = 'from:dril include:nativeretweets';
 
+// limit the query results to the past x days
 $now   = time();
 $since = $now - 86400 * 7; // x days, standard API access will probably return only 20 tweets either way
-$query = sprintf('from:dril include:nativeretweets since:%s until:%s', date('Y-m-d', $since), date('Y-m-d', $now));
-
+$query = sprintf('% since:%s until:%s', $query, date('Y-m-d', $since), date('Y-m-d', $now));
 
 $options = new DrilArchiveOptions;
 // HTTPOptions
@@ -41,12 +42,12 @@ $options->apiToken                = Util::getToken(__DIR__.'/../config', '.env',
 $options->query                   = $query;
 
 
-// we need this one here just for local runs (or repairs...)
-$timelineJSON = __DIR__.'/../.build/dril.json';
+// we need "/.build/dril.json here" just for local runs (or repairs...)
+$timelineJSON = realpath(sprintf('%s/../output/%s.json', __DIR__, $options->filename));
 
 // on GitHub actions: clone repo, checkout gh-pages, use previous build
 if(isset($_SERVER['GITHUB_ACTIONS'])){
-	$timelineJSON = realpath(__DIR__.'/../previous-build/dril.json');
+	$timelineJSON = realpath(sprintf('%s/../previous-build/%s.json', __DIR__, $options->filename));
 }
 
 (new DrilArchive($options))->compileDrilTimeline($timelineJSON, true, $since);
