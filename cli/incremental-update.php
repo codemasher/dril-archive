@@ -27,7 +27,8 @@ $query = 'from:dril include:nativeretweets';
 // limit the query results to the past x days
 $now   = time();
 $since = $now - 86400 * 7; // x days, standard API access will probably return only 20 tweets either way
-$query = sprintf('%s since:%s until:%s', $query, date('Y-m-d', $since), date('Y-m-d', $now));
+$until = $now + 86400; // the twitter search has become (?) incredibly dumb: date "today" doesn't necessarily include today's results
+$query = sprintf('%s since:%s until:%s', $query, date('Y-m-d', $since), date('Y-m-d', $until));
 
 $options = new DrilArchiveOptions;
 // HTTPOptions
