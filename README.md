@@ -6,10 +6,10 @@ People started to worry for the whereabouts of [dril's tweets](https://twitter.c
 
 I started to write [a backup tool](https://github.com/codemasher/twitter-archive) to augment the incomplete [twitter archive downloads](https://twitter.com/settings/download_your_data) and of course dril's feed was used for [testing purposes](https://twitter.com/codemasher/status/1594217145428152320).
 Around the same time, [Nick Farruggia](https://twitter.com/nickfarruggia/status/1594121736987250688) shared a [Google spreadsheet with every dril tweet](https://docs.google.com/spreadsheets/d/1juZ8Dzx-hVCDx_JLVOKI1eHzBlURHd7u6dqkb3F8q4w), that i then used as basis [to compile a JSON](https://gist.github.com/codemasher/d921cab21c3e684e6bb69219da900b4e) from the Twitter web API.
-Eventually, the archive, along with the scripts i used to download and compile ended up in this repository in order to compile the data into other formats and run a static website via GH pages.
+Eventually, the archive, along with the scripts i used to download and compile ended up in this repository in order to compile the data into other formats and run [a static website](https://codemasher.github.io/dril-archive/) via [GitHub pages](https://github.com/codemasher/dril-archive/tree/gh-pages).
 
 ## Downloads
-Ok, this is a bit messy, but releases are hardly feasible for this type of repo. Instead, each build creates an artifact with the files that are committed to [the gh-pages branch](https://github.com/codemasher/dril-archive/tree/gh-pages) for [the static website](https://codemasher.github.io/dril-archive/).
+Ok, this is a bit messy, but releases are hardly feasible for this type of repo. Instead, each build creates an artifact with the files that are committed to the gh-pages branch for the static website.
 You can download these artifacts under ["actions/Build"](https://github.com/codemasher/dril-archive/actions/workflows/build.yml) and [filter by "scheduled"](https://github.com/codemasher/dril-archive/actions/workflows/build.yml?query=event%3Aschedule).
 Click on the latest workflow and scroll down to "artifacts" - there you are!
 
