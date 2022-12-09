@@ -66,7 +66,7 @@ class Tweet implements JsonSerializable{
 	/**
 	 * @throws \JsonException
 	 */
-	public function __construct(array|stdClass $tweet, bool $fromAPI = false){
+	public function __construct(Tweet|stdClass|array $tweet, bool $fromAPI = false){
 		$tweet = json_decode(json: json_encode(value: $tweet, flags: JSON_THROW_ON_ERROR), flags: JSON_THROW_ON_ERROR);
 
 		$fromAPI

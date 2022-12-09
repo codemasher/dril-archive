@@ -67,7 +67,9 @@ class DrilArchive{
 	protected ClientInterface $http;
 	protected LoggerInterface $logger;
 
+	/** @var \codemasher\DrilArchive\User[] */
 	protected array $tempUsers     = [];
+	/** @var \codemasher\DrilArchive\Tweet[] */
 	protected array $tempTimeline  = [];
 	protected string $cachedir     = '';
 	protected int $since;
@@ -725,20 +727,22 @@ class DrilArchive{
 				continue;
 			}
 
-			// extract short URLs
+			// extract short URLs (i hate this but also idc)
 			$rx = '#(?<url>https?://t.co(\S+)?)#';
 			if(preg_match_all($rx, $tweet->text, $m)){
-				$url = (new URLExtractor($this->http))->extract($m['url'][0]);
-				str_replace($m['url'][0], $url, $tweet->text);
-
+				$url                  = (new URLExtractor($this->http))->extract($m['url'][0]);
+				$t                    = json_decode(json_encode($tweet));
+				$t->text              = str_replace($m['url'][0], $url, $tweet->text);
+				$this->tempTimeline[] = new Tweet($t);
 				$this->logger->info(sprintf('extracted URL "%s" from "%s"', $url, $m['url'][0]));
 			}
 
 			if(isset($tweet->retweeted_status->text)){
 				if(preg_match_all($rx, $tweet->retweeted_status->text, $m)){
-					$url = (new URLExtractor($this->http))->extract($m['url'][0]);
-					str_replace($m['url'][0], $url, $tweet->retweeted_status->text);
-
+					$url                       = (new URLExtractor($this->http))->extract($m['url'][0]);
+					$t                         = json_decode(json_encode($tweet));
+					$t->retweeted_status->text = str_replace($m['url'][0], $url, $tweet->retweeted_status->text);
+					$this->tempTimeline[]      = new Tweet($t);
 					$this->logger->info(sprintf('extracted URL in RT "%s" from "%s"', $url, $m['url'][0]));
 				}
 			}
