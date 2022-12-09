@@ -11,6 +11,7 @@ namespace codemasher\DrilArchive;
 
 use chillerlan\HTTP\Psr17\FactoryHelpers;
 use chillerlan\HTTP\Psr18\CurlClient;
+use chillerlan\HTTP\Psr18\URLExtractor;
 use chillerlan\HTTP\Psr7\Request;
 use chillerlan\HTTP\Psr7\Response;
 use chillerlan\HTTP\Utils\MessageUtil;
@@ -724,7 +725,25 @@ class DrilArchive{
 				continue;
 			}
 
-			$rx = '#https://twitter.com/(?<screen_name>[^/]+)/status/(?<status_id>\d+)/photo/(?<photo>\d+)(\S+)?#i';
+			// extract short URLs
+			$rx = '#(?<url>https?://t.co(\S+)?)#';
+			if(preg_match_all($rx, $tweet->text, $m)){
+				$url = (new URLExtractor($this->http))->extract($m['url'][0]);
+				str_replace($m['url'][0], $url, $tweet->text);
+
+				$this->logger->info(sprintf('extracted URL "%s" from "%s"', $url, $m['url'][0]));
+			}
+
+			if(isset($tweet->retweeted_status->text)){
+				if(preg_match_all($rx, $tweet->retweeted_status->text, $m)){
+					$url = (new URLExtractor($this->http))->extract($m['url'][0]);
+					str_replace($m['url'][0], $url, $tweet->retweeted_status->text);
+
+					$this->logger->info(sprintf('extracted URL in RT "%s" from "%s"', $url, $m['url'][0]));
+				}
+			}
+
+			$rx = '#https?://twitter.com/(?<screen_name>[^/]+)/status/(?<status_id>\d+)/photo/(?<photo>\d+)(\S+)?#i';
 			if(preg_match_all($rx, $tweet->text, $m)){
 				$matches[$id]  = ['photo', $m];
 				$statuses[$id] = $m['status_id'][0];

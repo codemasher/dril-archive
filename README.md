@@ -25,6 +25,7 @@ Click on the latest workflow and scroll down to "artifacts" - there you are!
 - copy/rename the `php.ini-development` to `php.ini` and open the latter in an editor
   - search for `extension_dir`, uncomment this line (under "on windows")
   - search for `extension=curl`, uncomment this line (remove the semicolon)
+  - search for `extension=mbstring`, uncomment this line
   - search for `extension=openssl`, uncomment this line
 - install composer: [Windows install](https://getcomposer.org/Composer-Setup.exe)
 - optional: add PHP and Composer to your system `PATH`
@@ -39,7 +40,7 @@ It might be necessary to provide a CA file for OpenSSL:
 ### PHP for Linux
 - add the PPA [ondrej/php](https://launchpad.net/~ondrej/+archive/ubuntu/php): `sudo apt-add-repository ppa:ondrej/php`
 - update the package list: `sudo apt-get update`
-- install php: `sudo apt-get install php8.1-cli php8.1-common php8.1-curl php8.1-openssl php8.1-xml`
+- install php: `sudo apt-get install php8.1-cli php8.1-common php8.1-curl php8.1-mbstring php8.1-openssl php8.1-xml`
 - install composer: [installation guide](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-composer-on-ubuntu-20-04)
 
 A PHP installation guide can be found [over here on digitalocean.com](https://www.digitalocean.com/community/tutorials/how-to-install-php-8-1-and-set-up-a-local-development-environment-on-ubuntu-22-04).

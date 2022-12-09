@@ -5,9 +5,10 @@
 		"php": "^8.1",
 		"ext-curl": "*",
 		"ext-json": "*",
+		"ext-mbstring": "*",
 		"ext-openssl": "*",
 		"chillerlan/php-dotenv": "^2.1.2",
-		"chillerlan/php-oauth-providers": "dev-main#48d83dc04879baea1468d39adf468565b5ef3de0",
+		"chillerlan/php-oauth-providers": "dev-main#e868eca170b911f7f4b5225be9ea7a39d98dd755",
 		"monolog/monolog": "^3.2"
 	},
 	"autoload": {

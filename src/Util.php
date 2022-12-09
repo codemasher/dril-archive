@@ -21,6 +21,8 @@ use function htmlentities;
 use function in_array;
 use function json_decode;
 use function json_encode;
+use function mb_convert_encoding;
+use function mb_detect_encoding;
 use function mkdir;
 use function preg_replace;
 use function preg_replace_callback;
@@ -133,7 +135,7 @@ class Util{
 		//replace custom unicode characters
 		$str      = strtr(trim($str), $table);
 		//replace (nearly) all chars which have htmlentities
-		$entities = htmlentities(utf8_encode($str), ENT_NOQUOTES, 'UTF-8');
+		$entities = htmlentities(mb_convert_encoding($str, 'UTF-8', mb_detect_encoding($str)), ENT_NOQUOTES, 'UTF-8');
 		$str      = preg_replace('#&([a-z]{1,2})(acute|grave|cedil|circ|uml|lig|tilde|ring|slash);#i', '$1', $entities);
 		//clean out the rest
 		$str      = preg_replace(['([\40])', '([^a-zA-Z0-9-])', '(-{2,})'], '-', $str);
