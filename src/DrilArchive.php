@@ -11,7 +11,7 @@ namespace codemasher\DrilArchive;
 
 use chillerlan\HTTP\Psr17\FactoryHelpers;
 use chillerlan\HTTP\Psr18\CurlClient;
-use chillerlan\HTTP\Psr18\URLExtractor;
+#use chillerlan\HTTP\Psr18\URLExtractor;
 use chillerlan\HTTP\Psr7\Request;
 use chillerlan\HTTP\Psr7\Response;
 use chillerlan\HTTP\Utils\MessageUtil;
@@ -728,7 +728,7 @@ class DrilArchive{
 			}
 
 			// extract short URLs (i hate this but also idc)
-			$rx = '#(?<url>https?://t.co(\S+)?)#';
+/*			$rx = '#(?<url>https?://t.co(\S+)?)#';
 			if(preg_match_all($rx, $tweet->text, $m)){
 				$url                  = (new URLExtractor($this->http))->extract($m['url'][0]);
 				$t                    = json_decode(json_encode($tweet));
@@ -746,7 +746,7 @@ class DrilArchive{
 					$this->logger->info(sprintf('extracted URL in RT "%s" from "%s"', $url, $m['url'][0]));
 				}
 			}
-
+*/
 			$rx = '#https?://twitter.com/(?<screen_name>[^/]+)/status/(?<status_id>\d+)/photo/(?<photo>\d+)(\S+)?#i';
 			if(preg_match_all($rx, $tweet->text, $m)){
 				$matches[$id]  = ['photo', $m];
@@ -804,14 +804,19 @@ class DrilArchive{
 				$tweet = json_decode(json_encode($this->tempTimeline[$id]));
 
 				if($type === 'quote'){
-					// in case the quoted tweet does not exist in the tweet object
-					if(!isset($tweet->quoted_status_id) || !isset($tweet->quoted_status)){
-						$tweet->quoted_status_id = $v1Tweet->id;
-						$tweet->quoted_status    = new Tweet($v1Tweet, true);
+					if($v1Tweet->id === $tweet->id){
+						$tweet = new Tweet($v1Tweet, true);
 					}
+					else{
+						// in case the quoted tweet does not exist in the tweet object
+						if(!isset($tweet->quoted_status_id) || !isset($tweet->quoted_status)){
+							$tweet->quoted_status_id = $v1Tweet->id;
+							$tweet->quoted_status    = new Tweet($v1Tweet, true);
+						}
 
-					// just remove the tweet URL
-					$tweet->text = str_replace($match[0][0], '', $tweet->text);
+						// just remove the tweet URL
+						$tweet->text = str_replace($match[0][0], '', $tweet->text);
+					}
 				}
 				elseif($type === 'photo' || $type === 'photo_rt'){
 					$mediaItems = [];
