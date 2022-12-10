@@ -43,13 +43,13 @@ $options->apiToken                = Util::getToken(__DIR__.'/../config', '.env',
 $options->query                   = $query;
 
 
-// we need "/.build/dril.json here" just for local runs (or repairs...)
 $timelineJSON = realpath(sprintf('%s/../output/%s.json', __DIR__, $options->filename));
 
 // on GitHub actions: clone repo, checkout gh-pages, use previous build
 if(isset($_SERVER['GITHUB_ACTIONS'])){
-#	$timelineJSON = realpath(sprintf('%s/../previous-build/%s.json', __DIR__, $options->filename));
-	$timelineJSON = realpath(sprintf('%s/../.build/dril.json', __DIR__));
+	$timelineJSON = realpath(sprintf('%s/../previous-build/%s.json', __DIR__, $options->filename));
+	// we need "/.build/dril.json here" just for rebuilds/repairs...
+#	$timelineJSON = realpath(sprintf('%s/../.build/dril.json', __DIR__));
 }
 
 (new DrilArchive($options))->compileDrilTimeline($timelineJSON, true, $since);
