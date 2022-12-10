@@ -29,7 +29,7 @@ require_once __DIR__.'/../vendor/autoload.php';
  *
  * It seems that the bearer token is valid for several days at least.
  */
-$requestToken = 'Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA';
+$requestToken = 'Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs=1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA';
 
 /*
  * The guest token is in the same place as the bearer token, just scroll a bit further
@@ -37,7 +37,12 @@ $requestToken = 'Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4p
  *
  * It appears that the guest token is valid for about 2 hours.
  */
-$guestToken = '1599421023828459523';
+$guestToken = '1601580511759110145';
+
+// auto fetching the guest token
+if(preg_match('/gt=(?<guest_token>\d+);/', file_get_contents('https://twitter.com'), $match)){
+	$guestToken = $match['guest_token'];
+}
 
 /*
  * The search query
