@@ -250,7 +250,7 @@ class DrilArchive{
 		}
 
 		if($this->options->fetchFromAPISearch){
-			$this->getTimelineFromAPISearch();
+			$this->getTimelineFromAPISearch($retweets);
 		}
 
 		if($this->options->drilCSV){
@@ -292,7 +292,7 @@ class DrilArchive{
 	 *
 	 * @see https://developer.twitter.com/en/docs/twitter-api/v1/tweets/search/api-reference/get-search-tweets
 	 */
-	protected function getTimelineFromAPISearch():void{
+	protected function getTimelineFromAPISearch(array &$retweets):void{
 
 		$params = [
 			'q'                => $this->options->query,
@@ -322,6 +322,10 @@ class DrilArchive{
 
 				if(!isset($this->tempTimeline[$tweet->id])){
 					$this->tempTimeline[$tweet->id] = new Tweet($tweet, true);
+				}
+
+				if(str_starts_with($tweet->text, 'RT @') && $tweet->created_at > $this->since){
+					$retweets[] = $tweet->id;
 				}
 			}
 
@@ -429,7 +433,7 @@ class DrilArchive{
 
 			// embed quoted tweets
 			if(isset($tweet->quoted_status_id) && isset($tempTweets[$tweet->quoted_status_id])){
-				$tweet->setQuotedStatus($tempTweets[$tweet->quoted_status_id]);
+				$tweet->quoted_status = $tempTweets[$tweet->quoted_status_id];
 			}
 
 			$v = $tweet;
@@ -594,7 +598,8 @@ class DrilArchive{
 				$id   = (int)$tweet->referenced_tweets[0]->id;
 				$rtID = (int)$tweet->id;
 				// create a parsed tweet for the RT status and save the original tweet id in it
-				$this->tempTimeline[$rtID] = (new Tweet($tweet, true))->setRetweetedStatusID($id);
+				$this->tempTimeline[$rtID] = new Tweet($tweet, true);
+				$this->tempTimeline[$rtID]->retweeted_status_id = $id;
 				// to backreference in the next op
 				// original tweet id => retweet status id
 				$rtIDs[$id] = $rtID;
@@ -650,7 +655,7 @@ class DrilArchive{
 
 			foreach($v1json as $v1Tweet){
 				$this->tempUsers[$v1Tweet->user->id] = new User($v1Tweet->user, true);
-				$this->tempTimeline[$rtIDs[$v1Tweet->id]]->setRetweetedStatus(new Tweet($v1Tweet, true));
+				$this->tempTimeline[$rtIDs[$v1Tweet->id]]->retweeted_status = new Tweet($v1Tweet, true);
 			}
 
 			foreach($v2json->data as $v2Tweet){

@@ -165,11 +165,11 @@ class Timeline implements ArrayAccess, Countable, JsonSerializable{
 	protected function setTweetUsers(Tweet $tweet):Tweet{
 
 		if(isset($this->users[$tweet->user_id])){
-			$tweet->setUser($this->users[$tweet->user_id]);
+			$tweet->user = $this->users[$tweet->user_id];
 		}
 
 		if($tweet->in_reply_to_user_id !== null && isset($this->users[$tweet->in_reply_to_user_id])){
-			$tweet->setInReplyToUser($this->users[$tweet->in_reply_to_user_id]);
+			$tweet->in_reply_to_user = $this->users[$tweet->in_reply_to_user_id];
 		}
 
 		if(isset($tweet->quoted_status)){

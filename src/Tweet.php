@@ -10,7 +10,6 @@
 
 namespace codemasher\DrilArchive;
 
-use InvalidArgumentException;
 use JsonSerializable;
 use stdClass;
 use function count;
@@ -32,36 +31,36 @@ use const JSON_THROW_ON_ERROR;
  */
 class Tweet implements JsonSerializable{
 
-	public readonly int $id;
-	public readonly int $user_id;
-	public readonly int $created_at;
-	public readonly string $text;
-	public readonly ?string $source;
-	public readonly int $retweet_count;
-	public readonly int $like_count;
-	public readonly int $reply_count;
-	public readonly int $quote_count;
-	public readonly bool $favorited;
-	public readonly bool $retweeted;
-	public readonly bool $possibly_sensitive;
-	public readonly ?int $in_reply_to_status_id;
-	public readonly ?int $in_reply_to_user_id;
-	public readonly ?string $in_reply_to_screen_name;
-	public readonly bool $is_quote_status;
-	public readonly ?int $quoted_status_id;
-	public readonly ?int $retweeted_status_id;
-	public readonly ?int $self_thread_id;
-	public readonly ?int $conversation_id;
-	public readonly array $media;
-	public readonly ?array $coordinates;
-	public readonly ?array $geo;
-	public readonly ?array $place;
+	public int $id;
+	public int $user_id;
+	public int $created_at;
+	public string $text;
+	public ?string $source;
+	public int $retweet_count;
+	public int $like_count;
+	public int $reply_count;
+	public int $quote_count;
+	public bool $favorited;
+	public bool $retweeted;
+	public bool $possibly_sensitive;
+	public ?int $in_reply_to_status_id;
+	public ?int $in_reply_to_user_id;
+	public ?string $in_reply_to_screen_name;
+	public bool $is_quote_status;
+	public ?int $quoted_status_id;
+	public ?int $retweeted_status_id;
+	public ?int $self_thread_id;
+	public ?int $conversation_id;
+	public array $media;
+	public ?array $coordinates;
+	public ?array $geo;
+	public ?array $place;
 
-	public readonly ?Tweet $quoted_status;
-	public readonly ?Tweet $retweeted_status;
+	public ?Tweet $quoted_status;
+	public ?Tweet $retweeted_status;
 
-	protected ?User $user;
-	protected ?User $in_reply_to_user;
+	public ?User $user;
+	public ?User $in_reply_to_user;
 
 	/**
 	 * @throws \JsonException
@@ -143,70 +142,6 @@ class Tweet implements JsonSerializable{
 	}
 
 	/**
-	 *
-	 */
-	public function setQuotedStatus(Tweet $tweet):self{
-		$this->quoted_status = $tweet;
-
-		return $this;
-	}
-
-	/**
-	 *
-	 */
-	public function setQuotedStatusID(int $id):self{
-		$this->quoted_status_id = $id;
-
-		return $this;
-	}
-
-	/**
-	 *
-	 */
-	public function setRetweetedStatus(Tweet $tweet):self{
-		$this->retweeted_status = $tweet;
-
-		return $this;
-	}
-
-	/**
-	 *
-	 */
-	public function setRetweetedStatusID(int $id):self{
-		$this->retweeted_status_id = $id;
-
-		return $this;
-	}
-
-	/**
-	 *
-	 */
-	public function setUser(User $user):self{
-
-		if($user->id !== $this->user_id){
-			throw new InvalidArgumentException('invalid User');
-		}
-
-		$this->user = $user;
-
-		return $this;
-	}
-
-	/**
-	 *
-	 */
-	public function setInReplyToUser(User $user):self{
-
-		if($this->in_reply_to_user_id !== null && $user->id !== $this->in_reply_to_user_id){
-			throw new InvalidArgumentException('invalid User');
-		}
-
-		$this->in_reply_to_user = $user;
-
-		return $this;
-	}
-
-	/**
 	 * @see https://developer.twitter.com/en/docs/twitter-api/data-dictionary/object-model/media
 	 */
 	public static function parseMedia(object $media):stdClass{
@@ -234,7 +169,7 @@ class Tweet implements JsonSerializable{
 	/**
 	 *
 	 */
-	public function jsonSerialize():mixed{
+	public function jsonSerialize():array{
 		return get_object_vars($this);
 	}
 

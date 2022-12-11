@@ -26,27 +26,27 @@ use const JSON_THROW_ON_ERROR;
  */
 class User implements JsonSerializable{
 
-	public readonly int $id;
-	public readonly string $screen_name;
-	public readonly string $name;
-	public readonly string $description;
-	public readonly string $location;
-	public readonly string $url;
-	public readonly int $followers_count;
-	public readonly int $friends_count;
-	public readonly int $statuses_count;
-	public readonly int $favourites_count;
-	public readonly int $created_at;
-	public readonly bool $protected;
-	public readonly bool $verified;
-	public readonly bool $muting;
-	public readonly bool $blocking;
-	public readonly bool $blocked_by;
-	public readonly bool $is_cryptobro;
-	public readonly bool $clown_emoji;
-	public readonly string $profile_image;
-	public readonly string $profile_image_s;
-	public readonly string $profile_banner;
+	public int $id;
+	public string $screen_name;
+	public string $name;
+	public string $description;
+	public string $location;
+	public string $url;
+	public int $followers_count;
+	public int $friends_count;
+	public int $statuses_count;
+	public int $favourites_count;
+	public int $created_at;
+	public bool $protected;
+	public bool $verified;
+	public bool $muting;
+	public bool $blocking;
+	public bool $blocked_by;
+	public bool $is_cryptobro;
+	public bool $clown_emoji;
+	public string $profile_image;
+	public string $profile_image_s;
+	public string $profile_banner;
 
 	/**
 	 *
