@@ -246,7 +246,7 @@ class DrilArchive{
 		}
 
 		if($this->options->fetchFromAdaptiveSearch){
-			$this->getTimelineFromAdaptiveSearch();
+			$this->getTimelineFromAdaptiveSearch($retweets);
 		}
 
 		if($this->options->fetchFromAPISearch){
@@ -270,12 +270,12 @@ class DrilArchive{
 				}
 			}
 
+			// the remaining tweets from the CSV
+			$this->fetchCsvTweets($csv);
 		}
 
 		// now fetch the original retweeted tweets
 		$this->fetchRetweets($retweets);
-		// the remaining tweets from the CSV
-		$this->fetchCsvTweets($csv);
 		// improperly embedded tweets and photos
 		$this->updateEmbeddedMedia();
 		// fetch remining user profiles
@@ -354,7 +354,7 @@ class DrilArchive{
 	 *   - "to:username" for @mentions and replies
 	 *
 	 */
-	protected function getTimelineFromAdaptiveSearch():void{
+	protected function getTimelineFromAdaptiveSearch(array &$retweets):void{
 		$lastCursor = '';
 		$tempTweets = [];
 		$hash       = md5($this->options->query);
@@ -434,6 +434,10 @@ class DrilArchive{
 			// embed quoted tweets
 			if(isset($tweet->quoted_status_id) && isset($tempTweets[$tweet->quoted_status_id])){
 				$tweet->quoted_status = $tempTweets[$tweet->quoted_status_id];
+			}
+
+			if(str_starts_with($tweet->text, 'RT @') && $tweet->created_at > $this->since){
+				$retweets[] = $tweet->id;
 			}
 
 			$v = $tweet;
@@ -661,14 +665,11 @@ class DrilArchive{
 			foreach($v2json->data as $v2Tweet){
 				$v2Tweet = new Tweet($v2Tweet, true);
 				$rtID    = $rtIDs[$v2Tweet->id];
-				$v1Tweet = json_decode(json_encode($this->tempTimeline[$rtID]));
 
 				// @todo: image urls https://twitter.com/<user>/status/<id>>/photo/1
 				foreach(['user_id', 'text', 'conversation_id', 'place', 'coordinates', 'geo', 'media'] as $field){
-					$v1Tweet->retweeted_status->{$field} = $v2Tweet->{$field};
+					$this->tempTimeline[$rtID]->retweeted_status->{$field} = $v2Tweet->{$field};
 				}
-
-				$this->tempTimeline[$rtID] = new Tweet($v1Tweet);
 			}
 
 			$this->logger->info(sprintf('[%d] fetched data for %s tweet(s)', $i, count($ids)));
@@ -806,7 +807,7 @@ class DrilArchive{
 
 				[$type, $match] = $matches[$id];
 
-				$tweet = json_decode(json_encode($this->tempTimeline[$id]));
+				$tweet = $this->tempTimeline[$id];
 
 				if($type === 'quote'){
 					if($v1Tweet->id === $tweet->id){
@@ -849,7 +850,7 @@ class DrilArchive{
 
 				}
 
-				$this->tempTimeline[$id] = new Tweet($tweet);
+				$this->tempTimeline[$id] = $tweet;
 			}
 
 			$this->logger->info(sprintf('[%d] fetched data for %s embedded/photo tweet(s) ', $i, count($ids)));
