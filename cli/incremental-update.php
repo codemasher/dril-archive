@@ -49,7 +49,7 @@ $timelineJSON = realpath(sprintf('%s/../output/%s.json', __DIR__, $options->file
 if(isset($_SERVER['GITHUB_ACTIONS'])){
 	$timelineJSON = realpath(sprintf('%s/../previous-build/%s.json', __DIR__, $options->filename));
 	// we need "/.build/dril.json here" just for rebuilds/repairs...
-#	$timelineJSON = realpath(sprintf('%s/../.build/dril.json', __DIR__));
+	$timelineJSON = realpath(sprintf('%s/../.build/dril.json', __DIR__));
 }
 
 (new DrilArchive($options))->compileDrilTimeline($timelineJSON, true, $since);
