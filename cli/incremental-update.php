@@ -43,7 +43,7 @@ $options->apiToken                = Util::getToken(__DIR__.'/../config', '.env',
 $options->query                   = $query;
 
 
-$current  = realpath(sprintf('%s/../output/%s.json', __DIR__, $options->filename));
+$current  = sprintf('%s/../output/%s.json', __DIR__, $options->filename);
 $previous = realpath(sprintf('%s/../previous-build/%s.json', __DIR__, $options->filename));
 
 // we need "/.build/dril.json here" just for rebuilds/repairs...
