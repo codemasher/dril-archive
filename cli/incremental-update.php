@@ -50,8 +50,8 @@ $previous = realpath(sprintf('%s/../previous-build/%s.json', __DIR__, $options->
 $previous = realpath(sprintf('%s/../.build/dril.json', __DIR__));
 
 (new DrilArchive($options))
-	->compileDrilTimeline($current, true, $since)
-	->merge($current, $previous, false)
+	->compileDrilTimeline($previous, true, $since)
+	->merge($previous, $current, false)
 ;
 
 exit;
