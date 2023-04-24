@@ -42,8 +42,6 @@ use function file_put_contents;
 use function fopen;
 use function implode;
 use function intval;
-use function json_decode;
-use function json_encode;
 use function md5;
 use function mktime;
 use function preg_match_all;
@@ -89,7 +87,7 @@ class DrilArchive{
 	/**
 	 * prepare and fire a http request through PSR-7/PSR-18
 	 */
-	protected function httpRequest(string $path, array $params, string $cachefile, string $token = null):?ResponseInterface{
+	protected function httpRequest(string $path, array $params, string $cachefile, bool $useAdaptiveSearch = false):?ResponseInterface{
 		$filename = sprintf('%s/'.$cachefile.'.json', $this->cachedir, md5(implode(',', array_values($params))));
 
 		// try to fetch from cached data
@@ -100,12 +98,17 @@ class DrilArchive{
 		}
 
 		$request = (new Request('GET', QueryUtil::merge('https://api.twitter.com'.$path, $params)))
-			->withHeader('Authorization', sprintf('Bearer %s', $token ?? $this->options->apiToken))
+			->withHeader('Authorization', sprintf('Bearer %s', $this->options->apiToken))
+			->withHeader('x-twitter-client-language', 'en')
 		;
 
 		// we're running the adaptive search, so append the guest token header
-		if($token !== null){
-			$request = $request->withHeader('x-guest-token', $this->options->adaptiveGuestToken);
+		if($useAdaptiveSearch){
+			$request = $request
+				->withHeader('Authorization', sprintf('Bearer %s', $this->options->adaptiveRequestToken))
+				->withHeader('x-csrf-token', $this->options->adaptiveCsrfToken)
+				->withHeader('cookie', $this->options->adaptiveCookie)
+			;
 		}
 
 		$retriesOn429 = 0;
@@ -208,6 +211,51 @@ class DrilArchive{
 			$this->options->filename
 		));
 
+
+		return $this;
+	}
+
+	/**
+	 *
+	 */
+	public function merge(string $tl1path, string $tl2path, bool $overwrite = false):self{
+		$tl1 = Util::loadJSON($tl1path);
+		$tl2 = Util::loadJSON($tl2path);
+
+		$this->tempTimeline = [];
+		$this->tempUsers    = [];
+
+		foreach($tl1->tweets as $tweet){
+			$this->tempTimeline[$tweet->id] = new Tweet($tweet);
+		}
+
+		foreach($tl2->tweets as $tweet){
+
+			if(isset($this->tempTimeline[$tweet->id]) && $overwrite === false){
+				continue;
+			}
+
+			$this->tempTimeline[$tweet->id] = new Tweet($tweet);
+		}
+
+		foreach($tl1->users as $user){
+			$this->tempUsers[$user->id] = new User($user);
+		}
+
+		foreach($tl2->users as $user){
+
+			if(isset($this->tempUsers[$user->id]) && $overwrite === false){
+				continue;
+			}
+
+			$this->tempUsers[$user->id] = new User($user);
+		}
+
+		$this->logger->info(sprintf('parsed %d tweet(s) and %d user(s) from %s', count($tl1->tweets), count($tl1->users), realpath($tl1path)));
+		$this->logger->info(sprintf('parsed %d tweet(s) and %d user(s) from %s', count($tl2->tweets), count($tl2->users), realpath($tl2path)));
+
+		// save output
+		$this->saveTimeline();
 
 		return $this;
 	}
@@ -407,7 +455,7 @@ class DrilArchive{
 				unset($params['cursor']);
 			}
 
-			$response = $this->httpRequest('/2/search/adaptive.json', $params, sprintf('%s-%d', $hash, $count), $this->options->adaptiveRequestToken);
+			$response = $this->httpRequest('/2/search/adaptive.json', $params, sprintf('%s-%d', $hash, $count), true);
 
 			if($response === null){
 				break;
@@ -658,18 +706,22 @@ class DrilArchive{
 			$v2json = MessageUtil::decodeJSON($v2Response);
 
 			foreach($v1json as $v1Tweet){
-				$this->tempUsers[$v1Tweet->user->id] = new User($v1Tweet->user, true);
+				$this->tempUsers[$v1Tweet->user->id]                        = new User($v1Tweet->user, true);
 				$this->tempTimeline[$rtIDs[$v1Tweet->id]]->retweeted_status = new Tweet($v1Tweet, true);
 			}
 
 			foreach($v2json->data as $v2Tweet){
 				$v2Tweet = new Tweet($v2Tweet, true);
-				$rtID    = $rtIDs[$v2Tweet->id];
+
+				if(!isset($this->tempTimeline[$rtIDs[$v2Tweet->id]]->retweeted_status)){
+					continue;
+				}
 
 				// @todo: image urls https://twitter.com/<user>/status/<id>>/photo/1
 				foreach(['user_id', 'text', 'conversation_id', 'place', 'coordinates', 'geo', 'media'] as $field){
-					$this->tempTimeline[$rtID]->retweeted_status->{$field} = $v2Tweet->{$field};
+					$this->tempTimeline[$rtIDs[$v2Tweet->id]]->retweeted_status->{$field} = $v2Tweet->{$field};
 				}
+
 			}
 
 			$this->logger->info(sprintf('[%d] fetched data for %s tweet(s)', $i, count($ids)));
