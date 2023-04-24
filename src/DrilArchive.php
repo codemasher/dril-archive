@@ -893,7 +893,7 @@ class DrilArchive{
 					// add the media to the respective tweets
 					if($type === 'photo'){
 						$tweet->media = $mediaItems;
-						$tweet->text  = str_replace($match[0][0], '', $tweet->text['text']);
+						$tweet->text  = str_replace($match[0][0], '', $tweet->text);
 					}
 					elseif($type === 'photo_rt'){
 						$tweet->retweeted_status->media = $mediaItems;

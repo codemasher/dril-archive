@@ -47,7 +47,7 @@ $current  = sprintf('%s/../output/%s.json', __DIR__, $options->filename);
 $previous = realpath(sprintf('%s/../previous-build/%s.json', __DIR__, $options->filename));
 
 // we need "/.build/dril.json here" just for rebuilds/repairs...
-$previous = realpath(sprintf('%s/../.build/dril.json', __DIR__));
+#$previous = realpath(sprintf('%s/../.build/dril.json', __DIR__));
 
 (new DrilArchive($options))
 	->compileDrilTimeline($previous, true, $since)
