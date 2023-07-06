@@ -31,6 +31,7 @@ class DrilArchiveOptions extends OAuthOptions{
 	protected int $retriesOn429 = 5;
 	protected ?string $drilCSV = null;
 	protected string $filename = 'dril';
+	protected bool $fetchV2RTs = false;
 
 	/**
 	 *

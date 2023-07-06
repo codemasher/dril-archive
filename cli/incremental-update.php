@@ -41,6 +41,7 @@ $options->fromCachedApiResponses  = true;
 $options->fetchFromAPISearch      = true;
 $options->apiToken                = Util::getToken(__DIR__.'/../config', '.env', 'TWITTER_BEARER');
 $options->query                   = $query;
+$options->fetchV2RTs              = false;
 
 
 $current  = sprintf('%s/../output/%s.json', __DIR__, $options->filename);

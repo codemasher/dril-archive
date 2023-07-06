@@ -323,7 +323,10 @@ class DrilArchive{
 		}
 
 		// now fetch the original retweeted tweets
-		$this->fetchRetweets($retweets);
+		if($this->options->fetchV2RTs){
+			$this->fetchRetweets($retweets);
+		}
+
 		// improperly embedded tweets and photos
 		$this->updateEmbeddedMedia();
 		// fetch remining user profiles
