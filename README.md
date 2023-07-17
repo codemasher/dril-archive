@@ -1,5 +1,7 @@
 # dril-archive
 
+** DEAD. FUCK ELON MUSK.**
+
 Due to [the uncertain future](https://twitter.com/mistydemeo/status/1590900599302029313) of [Twitter dot com](https://www.washingtonpost.com/technology/2022/10/27/twitter-elon-musk/) 
 many have decided to pack their bags [to be ready to move on](https://mastodon.social/@mastodonusercount@bitcoinhackers.org/109365877178488409) in case the site [ceases to exist](https://twitter.com/alexeheath/status/1593399683086327808).
 People started to worry for the whereabouts of [dril's tweets](https://twitter.com/dril) - a [modern](https://twitter.com/dril/status/900592164589248513) [prophet](https://twitter.com/dril/status/134167378639597568) - ["who could only emerge on an app like Twitter"](https://www.washingtonpost.com/technology/2022/11/22/dril-musk-twitter-future/).

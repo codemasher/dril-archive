@@ -2,8 +2,8 @@
 # https://github.com/sebastianbergmann/phpunit/blob/master/.github/workflows/ci.yml
 
 on:
-  schedule:
-    - cron: "0 18 15 * *"
+#  schedule:
+#    - cron: "0 18 15 * *"
 
 name: "Counters"
 
